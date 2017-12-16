@@ -1,0 +1,9 @@
+# Configuration file
+# NOTE: Empty lines not yet supported for whatever reason
+win_width 512
+win_height 384
+canvas_width 128
+canvas_height 96
+fullscreen 0
+fps 30
+asset_path assets/assets.list

@@ -87,13 +87,15 @@ static void push_slime()
         }
     }
 
-    int id = rand() % 3;
+    int id = rand() % 5;
     VEC2 pos;
     switch(id)
     {
     case 0:
     case 1:
     case 2:
+    case 3:
+    case 4:
         
         pos.x = 128+8;
         pos.y = 96-12;

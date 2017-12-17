@@ -22,6 +22,7 @@ static void slime_animate(SLIME* s, float tm)
 {   
     switch(s->id)
     {
+    case 4:
     case 1:
     case 0:
         if(s->canJump)
@@ -32,6 +33,15 @@ static void slime_animate(SLIME* s, float tm)
 
     case 2:
         spr_animate(&s->spr,s->id*3,0,3,5,tm);
+        break;
+
+    case 3:
+        if(s->canJump)
+        {
+            spr_animate(&s->spr,s->id*3,0,3,5,tm);
+        }
+        else
+            s->spr.frame = s->speed.y > 0.0f ? 5 : 4;
         break;
     
     default: 
@@ -44,15 +54,14 @@ static void slime_animate(SLIME* s, float tm)
 /// < tm Time mul.
 static bool jump_routine(SLIME* s, float tm)
 {
-    s->target.y = 2.0f;
     if(s->canJump)
     {
         s->spcTimer -= 1.0f * tm;
         if(s->spcTimer <= 0.0f)
         {
-            float height = (float)(rand() % 100)/100.0f * 2.0f + 1.0f;
+            float height = (float)(rand() % 100)/100.0f * 1.5f + 1.5f;
              s->speed.y = -height;
-             s->spcTimer = (float)(rand() % 30 + 15 + 10 * s->id);
+             s->spcTimer = s->id != 4 ? (float)(rand() % 30 + 15 + 10 * s->id) : 0;
              return true;
         }
     }
@@ -81,21 +90,23 @@ void put_slime(SLIME* s, VEC2 pos, int id)
     s->pos = pos;
     s->hurtTimer = 0.0f;
     s->id = id;
+    s->speed.y = 0.0f;
 
     switch(id)
     {
+    case 4:
     case 1:
     case 0:
         s->speed.x = -get_global_speed();
-        s->spcTimer = (float)(rand() % 60 + 30);
+        s->spcTimer = id == 4 ? 0 : (float)(rand() % 60 + 30);
         s->health = 3;
         break;
 
+    case 3:
     case 2:
         s->speed.x = -get_global_speed();
-        s->target.y = 0.0f;
         s->health = 3;  
-        s->speed.y = 0.0f;
+        s->spcTimer = (float)(rand() % 30 + 10);
         break;
 
     default:
@@ -118,11 +129,13 @@ void slime_update(SLIME* s, float tm)
     }
 
     s->target.x = -get_global_speed();
+    s->target.y = 2.0f;
 
     // Animate
     slime_animate(s,tm);
 
-    float acc = 0.075f;
+    float accX = 0.075f;
+    float accY = 0.075f;
 
     // Update
     switch(s->id)
@@ -141,9 +154,16 @@ void slime_update(SLIME* s, float tm)
             s->target.x = get_global_speed() / 10.0f;
         break;
 
-    case 2:
+    case 4:
+        jump_routine(s,tm);
         s->target.x *= 1.5f;
-        acc = 0.05f;
+        break;
+
+    case 3:
+        jump_routine(s,tm);
+    case 2:
+        s->target.x *= 1.75f;
+        accX = 0.045f;
         break;
 
     default: 
@@ -152,26 +172,26 @@ void slime_update(SLIME* s, float tm)
     
     if(s->target.x > s->speed.x)
     {
-        s->speed.x += acc * tm;
+        s->speed.x += accX * tm;
         if(s->speed.x > s->target.x)
             s->speed.x = s->target.x;
     }
     else if(s->target.x < s->speed.x)
     {
-        s->speed.x -= acc * tm;
+        s->speed.x -= accX * tm;
         if(s->speed.x < s->target.x)
             s->speed.x = s->target.x;
     }
 
     if(s->target.y > s->speed.y)
     {
-        s->speed.y += acc * tm;
+        s->speed.y += accY * tm;
         if(s->speed.y > s->target.y)
             s->speed.y = s->target.y;
     }
     else if(s->target.x < s->speed.y)
     {
-        s->speed.y -= acc * tm;
+        s->speed.y -= accY * tm;
         if(s->speed.y < s->target.y)
             s->speed.y = s->target.y;
     }

@@ -29,6 +29,10 @@ static void slime_animate(SLIME* s, float tm)
         else
             s->spr.frame = s->speed.y < 0.0f ? 1 : 2;
         break;  
+
+    case 2:
+        spr_animate(&s->spr,s->id*3,0,3,5,tm);
+        break;
     
     default: 
         break;
@@ -87,6 +91,13 @@ void put_slime(SLIME* s, VEC2 pos, int id)
         s->health = 3;
         break;
 
+    case 2:
+        s->speed.x = -get_global_speed();
+        s->target.y = 0.0f;
+        s->health = 3;  
+        s->speed.y = 0.0f;
+        break;
+
     default:
         break;
     }
@@ -99,7 +110,7 @@ void slime_update(SLIME* s, float tm)
     {
         if(s->dying)
         {
-            spr_animate(&s->spr,2 + s->id*3,0,5,3,tm);
+            spr_animate(&s->spr,2 + s->id*3,0,6,3,tm);
             if(s->spr.frame == 5)
                 s->dying = false;
         }
@@ -110,6 +121,8 @@ void slime_update(SLIME* s, float tm)
 
     // Animate
     slime_animate(s,tm);
+
+    float acc = 0.075f;
 
     // Update
     switch(s->id)
@@ -128,33 +141,37 @@ void slime_update(SLIME* s, float tm)
             s->target.x = get_global_speed() / 10.0f;
         break;
 
+    case 2:
+        s->target.x *= 1.5f;
+        acc = 0.05f;
+        break;
+
     default: 
         break;
     }
     
-    const float ACC = 0.075f;
     if(s->target.x > s->speed.x)
     {
-        s->speed.x += ACC * tm;
+        s->speed.x += acc * tm;
         if(s->speed.x > s->target.x)
             s->speed.x = s->target.x;
     }
     else if(s->target.x < s->speed.x)
     {
-        s->speed.x -= ACC * tm;
+        s->speed.x -= acc * tm;
         if(s->speed.x < s->target.x)
             s->speed.x = s->target.x;
     }
 
     if(s->target.y > s->speed.y)
     {
-        s->speed.y += ACC * tm;
+        s->speed.y += acc * tm;
         if(s->speed.y > s->target.y)
             s->speed.y = s->target.y;
     }
     else if(s->target.x < s->speed.y)
     {
-        s->speed.y -= ACC * tm;
+        s->speed.y -= acc * tm;
         if(s->speed.y < s->target.y)
             s->speed.y = s->target.y;
     }

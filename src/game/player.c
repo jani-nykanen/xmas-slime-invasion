@@ -23,9 +23,8 @@ static void pl_control(PLAYER*pl)
 
     pl->target.x = vpad_get_stick().x;
 
-    if(!pl->teleported && !pl->canJump && vpad_get_button(2) == PRESSED)
+    if(!pl->teleporting && vpad_get_button(2) == PRESSED)
     {
-        pl->teleported = true;
         pl->teleporting = true;
         pl->spr.frame = 0;
         pl->spr.row = 6;
@@ -161,7 +160,6 @@ static void pl_move(PLAYER* pl, float tm)
         pl->speed.y = 0.0f;
         pl->doubleJump = false;
         pl->spinning = false;
-        pl->teleported = false;
     }
     // Wall collisions
     if(pl->pos.x < 5 && pl->speed.x < 0.0f)
@@ -192,7 +190,6 @@ PLAYER create_player()
     pl.sprArm = create_sprite(16,16);
     pl.shooting = false;
     pl.teleporting = false;
-    pl.teleported = false;
 
     return pl;
 }

@@ -16,6 +16,7 @@
 typedef struct
 {
     VEC2 pos;
+    float startY;
     VEC2 speed;
     VEC2 target;
     SPRITE spr;
@@ -26,6 +27,9 @@ typedef struct
     int id;
     int health;
     float hurtTimer;
+
+    float spcValue1;
+    float spcValue2;
 }
 SLIME;
 
@@ -49,6 +53,11 @@ void slime_update(SLIME* s, float tm);
 /// < bullets Bullets in an array
 /// < bulletLength The size of the bullet array
 void slime_collision(SLIME* s, PLAYER* pl, BULLET* bullets, int bulletLength);
+
+/// Slime to slime collision
+/// < s "This" slime
+/// < o The other slime
+void slime_to_slime_collision(SLIME* s, SLIME* o);
 
 /// Draw a slime
 /// < s Slime

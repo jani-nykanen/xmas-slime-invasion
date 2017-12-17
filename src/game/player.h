@@ -21,7 +21,6 @@ typedef struct
     bool spinning;
     bool shooting;
     bool teleporting;
-    bool teleported;
     bool released;
     
     SPRITE spr;

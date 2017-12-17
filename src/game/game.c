@@ -87,7 +87,7 @@ static void push_slime()
         }
     }
 
-    int id = rand() % 5;
+    int id = rand() % 7;
     VEC2 pos;
     switch(id)
     {
@@ -100,6 +100,12 @@ static void push_slime()
         pos.x = 128+8;
         pos.y = 96-12;
         
+        break;
+
+    case 6:
+    case 5:
+        pos.x = 128+8;
+        pos.y = 16 + (float)(rand() % 56) - 8;
         break;
 
     default:
@@ -133,7 +139,7 @@ static int game_init()
     }
     for(i=0; i < SLIME_TIMER_COUNT; i++)
     {
-        slimeTimer[i] = (float) (rand() % 60 + 30);
+        slimeTimer[i] = (float) (rand() % 60 + 30) + i*15;
     }
 
     return 0;
@@ -147,6 +153,7 @@ static void game_update(float tm)
     update_stage(tm);
     // Update bullets
     int i = 0;
+    int i2 = 0;
     for(; i < BULLET_COUNT; i++)
     {
         bullet_update(&bullets[i],tm);
@@ -156,17 +163,25 @@ static void game_update(float tm)
     {
         slime_update(&slimes[i],tm);
         slime_collision(&slimes[i],&player,bullets,BULLET_COUNT);
+        for(i2 = 0; i2 < SLIME_COUNT; i2++)
+        {
+            if(i == i2) continue;
+            slime_to_slime_collision(&slimes[i],&slimes[i2]);
+        }
     }
     // Update player
     pl_update(&player,tm);
 
     // Update timers
     float speed = get_global_speed();
-    slimeTimer[0] -= 1.0f * speed * tm;
-    if(slimeTimer[0] <= 0.0f)
+    for(i=0; i < SLIME_TIMER_COUNT; i++)
     {
-        push_slime();
-        slimeTimer[0] = (float)(rand() % 90 + 40);
+        slimeTimer[i] -= 1.0f * speed * tm;
+        if(slimeTimer[i] <= 0.0f)
+        {
+            push_slime();
+            slimeTimer[i] = (float)(rand() % 90 + 40);
+        }
     }
 
 }

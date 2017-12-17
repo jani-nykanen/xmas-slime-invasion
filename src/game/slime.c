@@ -43,6 +43,11 @@ static void slime_animate(SLIME* s, float tm)
         else
             s->spr.frame = s->speed.y > 0.0f ? 5 : 4;
         break;
+
+    case 6:
+    case 5:
+        spr_animate(&s->spr,s->id*3,0,3,3,tm);
+        break;
     
     default: 
         break;
@@ -69,6 +74,15 @@ static bool jump_routine(SLIME* s, float tm)
     return false;
 }
 
+/// Flying routine
+/// < s Slime
+/// < tm Time mul.
+static void fly_routine(SLIME* s, float tm)
+{
+    s->spcTimer += 1.0f * tm;
+    s->pos.y = s->startY + s->spcValue1 * sin(s->spcTimer / (s->spcValue2));
+}
+
 /// Create a new slime instance
 SLIME create_slime()
 {
@@ -91,22 +105,27 @@ void put_slime(SLIME* s, VEC2 pos, int id)
     s->hurtTimer = 0.0f;
     s->id = id;
     s->speed.y = 0.0f;
+    s->startY = pos.y;
+
+    s->health = 3; 
+    s->speed.x = -get_global_speed();
 
     switch(id)
     {
     case 4:
     case 1:
     case 0:
-        s->speed.x = -get_global_speed();
         s->spcTimer = id == 4 ? 0 : (float)(rand() % 60 + 30);
-        s->health = 3;
         break;
 
     case 3:
     case 2:
-        s->speed.x = -get_global_speed();
-        s->health = 3;  
         s->spcTimer = (float)(rand() % 30 + 10);
+        break;
+
+    case 5:
+        s->spcValue1 = (float)(rand() % 12 + 8);
+        s->spcValue2 = (float)(rand() % 32 + 8);
         break;
 
     default:
@@ -156,14 +175,27 @@ void slime_update(SLIME* s, float tm)
 
     case 4:
         jump_routine(s,tm);
-        s->target.x *= 1.5f;
+        s->target.x *= 1.3f;
         break;
 
     case 3:
         jump_routine(s,tm);
     case 2:
-        s->target.x *= 1.75f;
-        accX = 0.045f;
+        s->target.x *= 1.6f;
+        accX = 0.035f;
+        break;
+
+    case 6:
+        s->target.x *= 1.6f;
+        accX = 0.035f;
+        s->target.y = 0.0f;
+        s->speed.y = 0.0f;
+        break;
+
+    case 5:
+        fly_routine(s,tm);
+        s->speed.y = 0.0f;
+        s->target.y = 0.0f;
         break;
 
     default: 
@@ -227,8 +259,6 @@ void slime_collision(SLIME* s, PLAYER* pl, BULLET* bullets, int bulletLength)
     int i = 0;
     for(; i < bulletLength; i++)
     {
-        
-
         BULLET b = bullets[i];
         if(b.exist == false) continue;
 
@@ -248,6 +278,27 @@ void slime_collision(SLIME* s, PLAYER* pl, BULLET* bullets, int bulletLength)
                 s->spr.row = s->id*3 +2;
             }
         }
+    }
+}
+
+/// Slime to slime collision
+void slime_to_slime_collision(SLIME* s, SLIME* o)
+{
+    if(s->dead || o->dead) return;
+
+    float dist = (float)hypot(s->pos.x-o->pos.x,s->pos.y-o->pos.y);
+    if(dist < 8)
+    {
+        float angle = (float)atan2(s->pos.y-o->pos.y,s->pos.x-o->pos.x);
+        o->pos.x -= cos(angle) * (6-dist);
+        o->pos.y -= sin(angle) * (6-dist);
+
+        if(o->pos.y > 96-12) o->pos.y = 96-12;
+
+        s->pos.x += cos(angle) * (6-dist);
+        s->pos.y += sin(angle) * (6-dist);
+
+        if(s->pos.y > 96-12) s->pos.y = 96-12;
     }
 }
 

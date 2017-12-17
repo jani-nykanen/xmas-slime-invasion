@@ -42,6 +42,8 @@ static SLIME slimes[32];
 #define SLIME_TIMER_COUNT 4
 /// Slime timers
 static float slimeTimer[SLIME_TIMER_COUNT];
+/// Bomb count
+static int bombCount;
 
 /// Draw HUD
 static void draw_hud()
@@ -71,10 +73,24 @@ static void draw_hud()
     kills[5] = 0;
     
     draw_text(bmpFont,kills,32,2,1,-1,0,false);
+
+    // Draw crystals
+    snprintf(num,3,"%d",player.crystals);
+
+    Uint8 crystals[32];
+    crystals[0] = 5;
+    crystals[1] = 6;
+    crystals[2] = 4;
+    crystals[3] = num[0];
+    crystals[4] = num[1];
+    crystals[5] = 0;
+    
+    draw_text(bmpFont,crystals,32,88,1,-1,0,false);
 }
 
 /// Push slime to the screen
-static void push_slime()
+/// < index Timer index
+static void push_slime(int index)
 {
     SLIME * s = &slimes[0];
     int i = 0;
@@ -87,10 +103,20 @@ static void push_slime()
         }
     }
 
-    int id = rand() % 7;
+    int id =  rand() % 8 + index;
+    if(id >= 8) id -= 8;
+
+    bombCount --;
+    if(bombCount <= 0)
+    {
+        id = rand() %2 + 8;
+        bombCount = rand() % 6 + 4;
+    }
+
     VEC2 pos;
     switch(id)
     {
+    case 8:
     case 0:
     case 1:
     case 2:
@@ -102,10 +128,16 @@ static void push_slime()
         
         break;
 
+    case 9:
     case 6:
     case 5:
         pos.x = 128+8;
         pos.y = 16 + (float)(rand() % 56) - 8;
+        break;
+
+    case 7:
+        pos.x = 128+8;
+        pos.y = -8;
         break;
 
     default:
@@ -141,6 +173,7 @@ static int game_init()
     {
         slimeTimer[i] = (float) (rand() % 60 + 30) + i*15;
     }
+    bombCount = rand() % 4 + 4;
 
     return 0;
 }
@@ -179,7 +212,7 @@ static void game_update(float tm)
         slimeTimer[i] -= 1.0f * speed * tm;
         if(slimeTimer[i] <= 0.0f)
         {
-            push_slime();
+            push_slime(i);
             slimeTimer[i] = (float)(rand() % 90 + 40);
         }
     }

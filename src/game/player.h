@@ -22,6 +22,8 @@ typedef struct
     bool shooting;
     bool teleporting;
     bool released;
+
+    int crystals;
     
     SPRITE spr;
     SPRITE sprArm;

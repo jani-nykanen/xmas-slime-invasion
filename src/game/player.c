@@ -190,6 +190,7 @@ PLAYER create_player()
     pl.sprArm = create_sprite(16,16);
     pl.shooting = false;
     pl.teleporting = false;
+    pl.crystals = 0;
 
     return pl;
 }

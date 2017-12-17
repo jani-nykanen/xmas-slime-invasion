@@ -22,6 +22,7 @@ static void slime_animate(SLIME* s, float tm)
 {   
     switch(s->id)
     {
+    case 8:
     case 4:
     case 1:
     case 0:
@@ -44,6 +45,8 @@ static void slime_animate(SLIME* s, float tm)
             s->spr.frame = s->speed.y > 0.0f ? 5 : 4;
         break;
 
+    case 9:
+    case 7:
     case 6:
     case 5:
         spr_animate(&s->spr,s->id*3,0,3,3,tm);
@@ -106,12 +109,15 @@ void put_slime(SLIME* s, VEC2 pos, int id)
     s->id = id;
     s->speed.y = 0.0f;
     s->startY = pos.y;
+    s->canJump = false;
 
     s->health = 3; 
     s->speed.x = -get_global_speed();
 
     switch(id)
     {
+    case 8:
+        s->health = 1;
     case 4:
     case 1:
     case 0:
@@ -123,9 +129,18 @@ void put_slime(SLIME* s, VEC2 pos, int id)
         s->spcTimer = (float)(rand() % 30 + 10);
         break;
 
+    case 9:
+        s->health = 1;
     case 5:
         s->spcValue1 = (float)(rand() % 12 + 8);
         s->spcValue2 = (float)(rand() % 32 + 8);
+        break;
+
+    case 7:
+
+        s->spcValue1 = (float)(rand() % 100)/100.0f + 0.5f;
+        s->spcValue2 = (float)(rand() % 100)/200.0f + 0.25f;
+        
         break;
 
     default:
@@ -159,6 +174,7 @@ void slime_update(SLIME* s, float tm)
     // Update
     switch(s->id)
     {
+    case 8:
     case 0:
         jump_routine(s,tm);
         break;
@@ -192,10 +208,25 @@ void slime_update(SLIME* s, float tm)
         s->speed.y = 0.0f;
         break;
 
+    case 9:
     case 5:
         fly_routine(s,tm);
         s->speed.y = 0.0f;
         s->target.y = 0.0f;
+        break;
+
+    case 7:
+
+        if(s->canJump)
+        {
+            s->id = 0;
+            s->spr.row = 0;
+            s->spr.frame = 0;
+        }
+
+        s->target.y = s->spcValue1;
+        s->speed.y = s->target.y;
+        s->target.x = s->spcValue2 * -get_global_speed();
         break;
 
     default: 
@@ -290,13 +321,13 @@ void slime_to_slime_collision(SLIME* s, SLIME* o)
     if(dist < 8)
     {
         float angle = (float)atan2(s->pos.y-o->pos.y,s->pos.x-o->pos.x);
-        o->pos.x -= cos(angle) * (6-dist);
-        o->pos.y -= sin(angle) * (6-dist);
+        o->pos.x -= cos(angle) * (8-dist)* 0.5f;
+        o->pos.y -= sin(angle) * (8-dist)* 0.5f;
 
         if(o->pos.y > 96-12) o->pos.y = 96-12;
 
-        s->pos.x += cos(angle) * (6-dist);
-        s->pos.y += sin(angle) * (6-dist);
+        s->pos.x += cos(angle) * (8-dist) * 0.5f;
+        s->pos.y += sin(angle) * (8-dist) * 0.5f;
 
         if(s->pos.y > 96-12) s->pos.y = 96-12;
     }

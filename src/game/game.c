@@ -18,6 +18,7 @@
 #include "stage.h"
 #include "player.h"
 #include "slime.h"
+#include "crystal.h"
 
 /// Bitmap font
 static BITMAP* bmpFont;
@@ -42,6 +43,10 @@ static SLIME slimes[32];
 #define SLIME_TIMER_COUNT 4
 /// Slime timers
 static float slimeTimer[SLIME_TIMER_COUNT];
+/// Crystal count
+#define CRYSTAL_COUNT 32
+/// Crystals
+static CRYSTAL crystals[32];
 /// Bomb count
 static int bombCount;
 
@@ -173,6 +178,11 @@ static int game_init()
     {
         slimeTimer[i] = (float) (rand() % 60 + 30) + i*15;
     }
+    for(i=0; i < CRYSTAL_COUNT; i++)
+    {
+        crystals[i] = create_crystal();
+    }
+
     bombCount = rand() % 4 + 4;
 
     return 0;
@@ -201,6 +211,11 @@ static void game_update(float tm)
             if(i == i2) continue;
             slime_to_slime_collision(&slimes[i],&slimes[i2]);
         }
+    }
+    // Update crystals
+    for(i=0; i < CRYSTAL_COUNT; i++)
+    {
+        crystal_update(&crystals[i],&player,tm);
     }
     // Update player
     pl_update(&player,tm);
@@ -234,6 +249,12 @@ void game_draw()
     {
         slime_draw(&slimes[i]);
     }
+    // Draw crystals
+    for(i=0; i < CRYSTAL_COUNT; i++)
+    {
+        crystal_draw(&crystals[i]);
+    }
+
     // Draw player
     pl_draw(&player);
     // Draw bullets
@@ -261,6 +282,31 @@ BULLET* get_next_bullet()
             return &bullets[i];
     }
     return &bullets[0];
+}
+
+/// Create crystals
+void create_crystals(VEC2 pos, int count)
+{
+    VEC2 speed;
+
+    
+    int loop = 0;
+    int i;
+    for(; loop < count; loop++)
+    {
+        for(i=0; i < CRYSTAL_COUNT; i++)
+        {
+            if(crystals[i].exist || crystals[i].vanishing) continue;
+
+            speed.x = -0.5f + (float)(rand() % 200) / 100.0f;
+            speed.y =  0.25f -(float)(rand() % 200 ) / 100.0f;
+
+            put_crystal(&crystals[i],pos,speed);
+
+
+            break;
+        }
+    }
 }
 
 /// Get game scene

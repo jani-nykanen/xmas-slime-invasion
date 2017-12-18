@@ -12,6 +12,11 @@
 /// > Bullet pointer
 BULLET* get_next_bullet();
 
+/// Create crystals
+/// < pos Position
+/// < count Crystal count
+void create_crystals(VEC2 pos, int count);
+
 /// Get game scene
 /// > Game scene
 SCENE get_game_scene();

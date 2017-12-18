@@ -8,3 +8,4 @@ bitmap sky assets/bitmaps/sky.png
 bitmap floor assets/bitmaps/floor.png
 bitmap bullet assets/bitmaps/bullet.png
 bitmap slimes assets/bitmaps/slimes.png
+bitmap crystal assets/bitmaps/crystal.png

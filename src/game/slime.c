@@ -7,6 +7,7 @@
 #include "../engine/assets.h"
 
 #include "stage.h"
+#include "game.h"
 
 #include "time.h"
 #include "math.h"
@@ -307,6 +308,11 @@ void slime_collision(SLIME* s, PLAYER* pl, BULLET* bullets, int bulletLength)
                 s->dying = true;
                 s->spr.frame = 0;
                 s->spr.row = s->id*3 +2;
+
+                if(s->id < 8)
+                {
+                    create_crystals(vec2(s->pos.x,s->pos.y-8),rand() % 2 + 1);
+                }
             }
         }
     }

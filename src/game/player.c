@@ -19,7 +19,7 @@ static BITMAP* bmpPlayer = NULL;
 /// Control
 static void pl_control(PLAYER*pl)
 {
-    pl->shooting = (vpad_get_button(0) == DOWN || pl->sprArm.frame > 0);
+    pl->shooting = (vpad_get_button(0) == DOWN || (vpad_get_button(3) == DOWN && pl->crystals > 0) || pl->sprArm.frame > 0);
 
     pl->target.x = vpad_get_stick().x;
 
@@ -88,8 +88,20 @@ static void pl_animate(PLAYER*pl, float tm)
 
         if(pl->sprArm.frame == 1 && lastFrame == 0)
         {
+            bool mode = vpad_get_button(3) == DOWN;
+
+            if(mode &&  pl->crystals <= 0) mode = false;
+            
+            if(mode)
+                 pl->crystals --;
+
+            int type = mode ? 1 : 0;
+            float speed = mode ? 2.0f : 4.0f;
+
             BULLET* b = get_next_bullet();
-            put_bullet(b,vec2(pl->pos.x + (pl->spinning ? -1 : 1) +7,pl->pos.y-16 +8),4.0f);
+            put_bullet(b,vec2(pl->pos.x + (pl->spinning ? -1 : 1) +7,pl->pos.y-16 +8),speed,type);
+
+            
         }
     }
 
@@ -190,7 +202,7 @@ PLAYER create_player()
     pl.sprArm = create_sprite(16,16);
     pl.shooting = false;
     pl.teleporting = false;
-    pl.crystals = 0;
+    pl.crystals = 10;
 
     return pl;
 }

@@ -19,6 +19,7 @@
 #include "player.h"
 #include "slime.h"
 #include "crystal.h"
+#include "blood.h"
 
 /// Bitmap font
 static BITMAP* bmpFont;
@@ -26,7 +27,7 @@ static BITMAP* bmpFont;
 /// Kills
 static int kills;
 /// Percentage
-static float percentage;
+static int percentage;
 
 /// Player
 static PLAYER player;
@@ -49,14 +50,17 @@ static float slimeTimer[SLIME_TIMER_COUNT];
 static CRYSTAL crystals[32];
 /// Bomb count
 static int bombCount;
+/// Blood count
+#define BLOOD_COUNT 128
+/// Blood
+static BLOOD blood[BLOOD_COUNT];
 
 /// Draw HUD
 static void draw_hud()
 {
     // Draw percentage
-    int prcInt = (int)floor(percentage * 1000);
-    int hundreds = (int)floor(prcInt / 10);
-    int decimals = prcInt - hundreds*10;
+    int hundreds = (int)floor(percentage / 10);
+    int decimals = percentage - hundreds*10;
 
     char prcStr[32];
     snprintf(prcStr,32,"%d.%d ",hundreds,decimals);
@@ -160,7 +164,7 @@ static int game_init()
 
     init_stage();
 
-    percentage = 0.0f;
+    percentage = 0;
     kills = 0;
 
     // Create objects
@@ -181,6 +185,10 @@ static int game_init()
     for(i=0; i < CRYSTAL_COUNT; i++)
     {
         crystals[i] = create_crystal();
+    }
+    for(i=0; i < BLOOD_COUNT; i++)
+    {
+        blood[i] = create_blood();
     }
 
     bombCount = rand() % 4 + 4;
@@ -220,6 +228,12 @@ static void game_update(float tm)
     // Update player
     pl_update(&player,tm);
 
+    // Update blood
+    for(i=0; i < BLOOD_COUNT; i++)
+    {
+        blood_update(&blood[i],tm);
+    }
+
     // Update timers
     float speed = get_global_speed();
     for(i=0; i < SLIME_TIMER_COUNT; i++)
@@ -248,6 +262,16 @@ void game_draw()
     for(i=0; i < SLIME_COUNT; i++)
     {
         slime_draw(&slimes[i]);
+    }
+    // Post-draw slimes
+    for(i=0; i < SLIME_COUNT; i++)
+    {
+        slime_post_draw(&slimes[i]);
+    }
+    // Draw blood
+    for(i=0; i < BLOOD_COUNT; i++)
+    {
+        blood_draw(&blood[i]);
     }
     // Draw crystals
     for(i=0; i < CRYSTAL_COUNT; i++)
@@ -289,7 +313,6 @@ void create_crystals(VEC2 pos, int count)
 {
     VEC2 speed;
 
-    
     int loop = 0;
     int i;
     for(; loop < count; loop++)
@@ -306,6 +329,40 @@ void create_crystals(VEC2 pos, int count)
 
             break;
         }
+    }
+}
+
+/// Create some nasty blood
+void create_blood_effect(VEC2 pos, int amount)
+{
+    VEC2 speed;
+
+    int loop = 0;
+    int i;
+    for(; loop < amount; loop++)
+    {
+        for(i=0; i < BLOOD_COUNT; i++)
+        {
+            if(blood[i].exist) continue;
+
+            speed.x = -1.5f + (float)(rand() % 300) / 100.0f;
+            speed.y = 0.5f - (float)(rand() % 300 ) / 100.0f;
+
+            put_blood(&blood[i],pos,speed);
+
+            break;
+        }
+    }
+}
+
+/// Add percentage
+void add_percentage(int amount)
+{
+    percentage += amount;
+    if(percentage >= 1000)
+    {
+        percentage = 1000;
+        // Trigger final boss event
     }
 }
 

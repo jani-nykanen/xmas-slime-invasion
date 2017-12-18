@@ -15,6 +15,25 @@
 
 /// Slime bitmap
 static BITMAP* bmpSlime = NULL;
+/// Kaboom bitap
+static BITMAP* bmpKaboom = NULL;
+
+/// Die
+/// < s Slime
+static void slime_die(SLIME* s)
+{
+    s->dead = true;
+    s->dying = true;
+    s->spr.frame = 0;
+    s->spr.row = s->id*3 +2;
+
+    if(s->id < 8)
+    {
+        create_crystals(vec2(s->pos.x,s->pos.y-8),rand() % 2 + 1);
+    }
+
+    create_blood_effect(vec2(s->pos.x,s->pos.y-8),rand() % 8 + 8);
+}
 
 /// Animate a slime
 /// < s Slime to animate
@@ -91,11 +110,13 @@ static void fly_routine(SLIME* s, float tm)
 SLIME create_slime()
 {
     if(bmpSlime == NULL) bmpSlime = get_bitmap("slimes");
+    if(bmpKaboom == NULL) bmpKaboom = get_bitmap("kaboom");
 
     SLIME s;
     s.dead = true;
     s.dying = false;
     s.spr = create_sprite(16,16);
+    s.sprBoom = create_sprite(48,48);
     return s;
 }
 
@@ -119,6 +140,7 @@ void put_slime(SLIME* s, VEC2 pos, int id)
     {
     case 8:
         s->health = 1;
+        s->boomTimer = 60.0f;
     case 4:
     case 1:
     case 0:
@@ -132,9 +154,10 @@ void put_slime(SLIME* s, VEC2 pos, int id)
 
     case 9:
         s->health = 1;
+        s->boomTimer = 60.0f;
     case 5:
         s->spcValue1 = (float)(rand() % 12 + 8);
-        s->spcValue2 = (float)(rand() % 32 + 8);
+        s->spcValue2 = (float)(rand() % 28 + 14);
         break;
 
     case 7:
@@ -156,9 +179,18 @@ void slime_update(SLIME* s, float tm)
     {
         if(s->dying)
         {
+            if(s->id < 8)
+            {
             spr_animate(&s->spr,2 + s->id*3,0,6,3,tm);
             if(s->spr.frame == 5)
                 s->dying = false;
+            }
+            else
+            {
+                s->boomTimer -= 1.0f * tm;
+                s->dying = s->boomTimer > 0.0f;
+                spr_animate(&s->sprBoom,0,0,2,4,tm);
+            }
         }
         return;
     }
@@ -300,19 +332,13 @@ void slime_collision(SLIME* s, PLAYER* pl, BULLET* bullets, int bulletLength)
             bullets[i].exist = false;
             bullets[i].dying = true;
             s->hurtTimer = 30.0f;
-            s->health --;
+            s->health -= b.id*2 + 1;
             s->speed.x = 1.0f;
             if(s->health <= 0)
             {
-                s->dead = true;
-                s->dying = true;
-                s->spr.frame = 0;
-                s->spr.row = s->id*3 +2;
+                slime_die(s);
 
-                if(s->id < 8)
-                {
-                    create_crystals(vec2(s->pos.x,s->pos.y-8),rand() % 2 + 1);
-                }
+                add_percentage(b.id == 0 ? 20 : 10);
             }
         }
     }
@@ -321,7 +347,22 @@ void slime_collision(SLIME* s, PLAYER* pl, BULLET* bullets, int bulletLength)
 /// Slime to slime collision
 void slime_to_slime_collision(SLIME* s, SLIME* o)
 {
-    if(s->dead || o->dead) return;
+    if(s->dead) return;
+
+    if(o->dying && o->id >= 8)
+    {
+        if(s->pos.x+6 > o->pos.x-16 && s->pos.x-6 < o->pos.x+16
+            && s->pos.y-2 > o->pos.y-24 && s->pos.y-14 < o->pos.y+8)
+        {
+            s->health = 0;
+            slime_die(s);
+            add_percentage(10);
+        }
+
+        return;
+    }
+
+    if(o->dead) return;
 
     float dist = (float)hypot(s->pos.x-o->pos.x,s->pos.y-o->pos.y);
     if(dist < 8)
@@ -351,4 +392,12 @@ void slime_draw(SLIME* s)
 
     spr_draw(&s->spr,bmpSlime,(int)round(s->pos.x-8),(int)round(s->pos.y-15),0);
     s->spr.row = row;
+}
+
+/// Post-drawing
+void slime_post_draw(SLIME* s)
+{
+    if(s->id < 8 || !s->dying) return;
+
+    spr_draw(&s->sprBoom,bmpKaboom,s->pos.x-24,s->pos.y-8-24,0);
 }

@@ -17,22 +17,21 @@ BULLET create_bullet()
 
     BULLET b;
     b.exist = false;
-    b.spr = create_sprite(10,3);
-    b.sprDeath = create_sprite(12,12);
-    b.sprDeath.row = 1;
+    b.spr = create_sprite(12,12);
     b.dying = false;
     return b;
 }
 
 /// Put a bullet to the screen
-void put_bullet(BULLET* b, VEC2 pos, float speed)
+void put_bullet(BULLET* b, VEC2 pos, float speed, int id)
 {
     b->exist = true;
     b->dying = false;
 
     b->pos = pos;
     b->speed = speed;
-    b->sprDeath.frame = 0;
+    b->spr.frame = 0;
+    b->id = id;
 }
 
 /// Update a bullet
@@ -42,8 +41,8 @@ void bullet_update(BULLET* b, float tm)
     {   
         if(b->dying)
         {
-            spr_animate(&b->sprDeath,1,0,5,2,tm);
-            if(b->sprDeath.frame == 5)
+            spr_animate(&b->spr,b->id*2 + 1,0,5,2,tm);
+            if(b->spr.frame == 5)
             {
                 b->dying = false;
             }
@@ -57,8 +56,8 @@ void bullet_update(BULLET* b, float tm)
     {
         b->exist = false;
     }
-
-    spr_animate(&b->spr,0,0,1,3,tm);
+    
+    spr_animate(&b->spr,b->id*2,0,1 + b->id*2,3,tm);
 }
 
 /// Draw a bullet
@@ -68,10 +67,10 @@ void bullet_draw(BULLET* b)
     {
         if(b->dying)
         {
-            spr_draw(&b->sprDeath,bmpBullet,(int)round(b->pos.x+5),(int)round(b->pos.y) -5, 0);
+            spr_draw(&b->spr,bmpBullet,(int)round(b->pos.x+5),(int)round(b->pos.y) -5, 0);
         }
         return;
     }
 
-    spr_draw(&b->spr,bmpBullet,(int)round(b->pos.x),(int)round(b->pos.y) -1, 0);
+    spr_draw(&b->spr,bmpBullet,(int)round(b->pos.x),(int)round(b->pos.y) -6, 0);
 }

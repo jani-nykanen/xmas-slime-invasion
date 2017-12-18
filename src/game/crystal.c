@@ -42,7 +42,7 @@ void crystal_update(CRYSTAL* c, PLAYER* pl, float tm)
     {
         if(c->vanishing)
         {
-            spr_animate(&c->spr,1,0,5,6,tm);
+            spr_animate(&c->spr,1,0,5,5,tm);
             if(c->spr.frame == 5)
                 c->vanishing = false;
         }

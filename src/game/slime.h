@@ -20,6 +20,7 @@ typedef struct
     VEC2 speed;
     VEC2 target;
     SPRITE spr;
+    SPRITE sprBoom;
     bool dead;
     bool dying;
     bool canJump;
@@ -30,6 +31,8 @@ typedef struct
 
     float spcValue1;
     float spcValue2;
+    
+    float boomTimer;
 }
 SLIME;
 
@@ -62,5 +65,8 @@ void slime_to_slime_collision(SLIME* s, SLIME* o);
 /// Draw a slime
 /// < s Slime
 void slime_draw(SLIME* s);
+
+/// Post-drawing
+void slime_post_draw(SLIME* s);
 
 #endif // __SLIME__

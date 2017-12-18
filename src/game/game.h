@@ -8,6 +8,9 @@
 
 #include "bullet.h"
 
+/// Draw game
+void game_draw();
+
 /// Get the next nonexistent bullet in the array
 /// > Bullet pointer
 BULLET* get_next_bullet();
@@ -17,11 +20,17 @@ BULLET* get_next_bullet();
 /// < count Crystal count
 void create_crystals(VEC2 pos, int count);
 
+/// Add percentage
+/// < amount Amount
+void add_percentage(int amount);
+
+/// Create some nasty blood
+/// < pos Position
+/// < amount Amount
+void create_blood_effect(VEC2 pos, int amount);
+
 /// Get game scene
 /// > Game scene
 SCENE get_game_scene();
-
-/// Draw game
-void game_draw();
 
 #endif // __GAME_SCENE__

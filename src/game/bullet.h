@@ -16,8 +16,8 @@ typedef struct
     float speed;
     bool exist;
     bool dying;
+    int id;
     SPRITE spr;
-    SPRITE sprDeath;
 }
 BULLET;
 
@@ -30,10 +30,11 @@ BULLET create_bullet();
 /// < b Bullet
 /// < pos Position
 /// < speed Spped
-void put_bullet(BULLET* b, VEC2 pos, float speed);
+/// < id Bullet id (0 or 1)
+void put_bullet(BULLET* b, VEC2 pos, float speed, int id);
 
 /// Update a bullet
-/// < b BUllet
+/// < b Bullet
 /// < tm Time mul.
 void bullet_update(BULLET* b, float tm);
 

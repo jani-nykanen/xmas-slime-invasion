@@ -28,8 +28,10 @@ static int prevSkyMode;
 /// Sky change limits
 static int skyChangeLimits[] = 
 {
-    2,5,9,14
+    2,4,7,10
 };
+/// Sky change timer
+static float skyChangeTimer;
 
 /// Initialize stage
 void init_stage()
@@ -43,6 +45,7 @@ void init_stage()
     globalSpeed = 1.0f;
     skyMode = 0;
     prevSkyMode = 0;
+    skyChangeTimer = 0.0f;
 }
 
 /// Update stage
@@ -58,6 +61,16 @@ void update_stage(float tm)
             ++ skyMode;
         }
     }
+    if(skyMode != prevSkyMode)
+    {
+        skyChangeTimer = 60.0f;
+    }
+    if(skyChangeTimer > 0.0f)
+    {
+        skyChangeTimer -= 1.0f * tm;
+    }
+
+    globalSpeed = is_player_dead() ? 0.0f : 1.0f + skyMode*0.2f;
 
     bgPos += globalSpeed * tm;
     if(bgPos >= 512.0f)
@@ -70,6 +83,14 @@ void draw_stage()
     int i = 0;
 
     draw_bitmap_region(bmpSky,0,skyMode*64,128,64,0,0,0);
+        if(skyChangeTimer <= 0.0f)
+        draw_bitmap_region(bmpSky,0,(bmpSky->h/5.0f)*skyMode,bmpSky->w,bmpSky->h/5,0,0,0);
+    else
+    {
+        draw_bitmap_region(bmpSky,0,(bmpSky->h/5.0f)*(skyMode-1),bmpSky->w,bmpSky->h/4,0,0,0);
+        int skip = 6 - (int)floor(skyChangeTimer/10.0f);
+        draw_skipped_bitmap_region(bmpSky,0,(bmpSky->h/5.0f)*(skyMode),bmpSky->w,bmpSky->h/5,0,0,skip,skip,0);
+    }
 
     // Hills
     int p = -((int) round(bgPos/4.0f)) % 128;
@@ -97,4 +118,10 @@ void draw_stage()
 float get_global_speed()
 {
     return globalSpeed;
+}
+
+/// Get the sky phase
+int get_sky_phase()
+{
+    return skyMode;
 }

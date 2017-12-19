@@ -186,6 +186,31 @@ static void pl_move(PLAYER* pl, float tm)
     }
 }
 
+/// Die
+/// < pl Player
+/// < tm Time mul.
+static void pl_die(PLAYER* pl, float tm)
+{
+    int oldFrame = pl->spr.frame;
+
+    float speed = 4.0f;
+    if(pl->spr.frame == 0) speed = 30.0f;
+    else if(pl->spr.frame == 7) speed = 60.0f;
+
+    pl->hurtTimer = 0.0f;
+    spr_animate(&pl->spr,7,0,8,speed,tm);
+
+    if(oldFrame == 0 && pl->spr.frame > 0)
+    {
+        create_blood_effect(vec2(pl->pos.x,pl->pos.y-8),64,0b00010000);
+    }
+
+    if(pl->spr.frame == 8)
+    {
+        pl->dying = false;
+    }
+}
+
 /// Create a player object
 PLAYER create_player()
 {
@@ -202,7 +227,11 @@ PLAYER create_player()
     pl.sprArm = create_sprite(16,16);
     pl.shooting = false;
     pl.teleporting = false;
-    pl.crystals = 10;
+    pl.crystals = 0;
+    pl.health = 3;
+    pl.hurtTimer = 0.0f;
+    pl.dead = false;
+    pl.dying = false;
 
     return pl;
 }
@@ -210,22 +239,64 @@ PLAYER create_player()
 /// Update player
 void pl_update(PLAYER* pl, float tm)
 {
+    if(pl->dead)
+    {
+        if(pl->dying)
+            pl_die(pl,tm);
+
+        return;
+    }
+
     pl_control(pl);
     pl_move(pl,tm);
     pl_animate(pl,tm);
+
+    if(pl->hurtTimer > 0.0f)
+        pl->hurtTimer -= 1.0f * tm;
+
+    if(pl->health <= 0)
+    {
+        pl->dead = true;
+        pl->dying = true;
+        pl->spr.frame = 0;
+        pl->spr.row = 7;
+        pl->spr.count = 0.0f;
+    }
 }
 
 /// Draw player
 void pl_draw(PLAYER* pl)
 {
-    if(pl->shooting)
+    if(pl->dead && !pl->dying) return;
+
+    bool cond = pl->hurtTimer > 0.0f && (int)floor(pl->hurtTimer/4) % 2 == 0;
+    if(cond)
+    {
+        pl->spr.frame += 8;
+        pl->sprArm.frame += 16;
+    }
+
+    if(pl->shooting && !pl->dying)
         spr_draw(&pl->sprArm,bmpPlayer,round(pl->pos.x) + (pl->spinning ? -1 : 1),round(pl->pos.y)-16,0);
 
     spr_draw(&pl->spr,bmpPlayer,round(pl->pos.x)-8,round(pl->pos.y)-16,0);
+
+    if(cond)
+    {
+        pl->spr.frame -= 8;
+        pl->sprArm.frame -= 16;
+    }
 }
 
 /// Make him/her suffer
 void pl_hurt(PLAYER* pl, VEC2 p, VEC2 d)
 {
-    // Kill the player here
+    if(pl->hurtTimer > 0.0f || pl->teleporting) return;
+
+    if(pl->pos.x+4 > p.x && pl->pos.x-4 < p.x+d.x
+        && pl->pos.y-2 > p.y && pl->pos.y-12 < p.y+d.y)
+    {
+        pl->hurtTimer = 60.0f;
+        pl->health --;
+    }
 }

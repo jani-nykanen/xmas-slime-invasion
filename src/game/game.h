@@ -34,6 +34,10 @@ int get_kills();
 /// Shake screen
 void shake_screen();
 
+/// Is the player dead
+/// > True, if dead
+bool is_player_dead();
+
 /// Create some nasty blood
 /// < pos Position
 /// < amount Amount

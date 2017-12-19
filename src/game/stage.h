@@ -21,4 +21,8 @@ void draw_stage();
 /// > Global speed
 float get_global_speed();
 
+/// Get the sky phase
+/// > Sky phase
+int get_sky_phase();
+
 #endif // __STAGE__

@@ -22,9 +22,14 @@ typedef struct
     bool shooting;
     bool teleporting;
     bool released;
+    bool dead;
+    bool dying;
 
     int crystals;
+    int health;
     
+    float hurtTimer;
+
     SPRITE spr;
     SPRITE sprArm;
 

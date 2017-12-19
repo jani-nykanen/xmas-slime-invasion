@@ -66,6 +66,9 @@ static float shakeTimer;
 /// Shake amount
 static int shake;
 
+/// Health change timer
+static float healthChange;
+
 /// Draw HUD
 static void draw_hud()
 {
@@ -92,7 +95,7 @@ static void draw_hud()
     kills[4] = num[1];
     kills[5] = 0;
     
-    draw_text(bmpFont,kills,32,2,1,-1,0,false);
+    draw_text(bmpFont,kills,32,2,1,0,0,false);
 
     // Draw crystals
     snprintf(num,3,"%d",player.crystals);
@@ -105,7 +108,20 @@ static void draw_hud()
     crystals[4] = num[1];
     crystals[5] = 0;
     
-    draw_text(bmpFont,crystals,32,88,1,-1,0,false);
+    draw_text(bmpFont,crystals,32,87,1,0,0,false);
+
+    // Draw hearts
+    int i = 0;
+    Uint8 h[] = {7,8};
+    for(; i < player.health; i++)
+    {
+        draw_text(bmpFont,h,2,-1,16 + i*13,0,0,false);
+    }
+    if(healthChange > 0.0f)
+    {
+        int pos = (int)(14.0f - 14.0f/60.0f * healthChange);
+        draw_text(bmpFont,h,2,-1 - pos,16 + i*13,0,0,false);
+    }
 }
 
 /// Push slime to the screen
@@ -183,12 +199,10 @@ static void push_victim()
     put_victim(v,vec2(128+6,96-12),rand() % 2);
 }
 
-/// Init game
-static int game_init()
+/// Recreate game
+static void game_recreate()
 {
     srand(time(NULL));
-
-    bmpFont = get_bitmap("font");
 
     init_stage();
 
@@ -208,7 +222,7 @@ static int game_init()
     }
     for(i=0; i < SLIME_TIMER_COUNT; i++)
     {
-        slimeTimer[i] = (float) (rand() % 60 + 30) + i*15;
+        slimeTimer[i] = (float) (rand() % 60 + 30) + i*600;
     }
     for(i=0; i < CRYSTAL_COUNT; i++)
     {
@@ -225,6 +239,17 @@ static int game_init()
 
     bombCount = rand() % 4 + 4;
     vicCount = rand() % 4 + 4;
+    healthChange = 0.0f;
+    shakeTimer = 0.0f;
+    shake = 0;
+
+}
+
+/// Init game
+static int game_init()
+{
+    bmpFont = get_bitmap("font");
+    game_recreate();
 
     return 0;
 }
@@ -233,6 +258,8 @@ static int game_init()
 /// tm Time multiplier
 static void game_update(float tm)
 {
+    int oldHealth = player.health;
+
     // Update stage
     update_stage(tm);
     // Update bullets
@@ -283,7 +310,7 @@ static void game_update(float tm)
         if(slimeTimer[i] <= 0.0f)
         {
             push_slime(i);
-            slimeTimer[i] = (float)(rand() % 90 + 40);
+            slimeTimer[i] = (float)(rand() % 120 + 60);
 
             vicCount --;
             if(!victimCreated && vicCount <= 0)
@@ -296,9 +323,21 @@ static void game_update(float tm)
         }
     }
 
+    // Update health change timer
+    if(oldHealth > player.health && player.health > -1)
+        healthChange = 60.0f;
+    if(healthChange > 0.0f)
+        healthChange -= 2.0f * tm;
+
     // Update shake timer
     if(shakeTimer > 0.0f)
         shakeTimer -= 1.0f * tm;
+
+    // Game over!
+    if(player.dead && !player.dying)
+    {
+        game_recreate();
+    }
 }
 
 /// Draw game
@@ -398,6 +437,12 @@ void create_crystals(VEC2 pos, int count)
 /// Add percentage
 void add_percentage(int amount)
 {
+    int p = get_sky_phase();
+    if(p > 0)
+    {
+        amount = (int)((float)amount * (1.0f + p*0.25f));
+    }
+
     percentage += amount;
     if(percentage >= 1000)
     {
@@ -423,6 +468,12 @@ void shake_screen()
 {
     shakeTimer = 30.0f + kills*5.0f;
     shake = 4 + (int)floor(kills/3);
+}
+
+/// Is the player dead
+bool is_player_dead()
+{
+    return player.dead;
 }
 
 /// Create some nasty blood

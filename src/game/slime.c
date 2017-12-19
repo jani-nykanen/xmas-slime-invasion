@@ -133,7 +133,7 @@ void put_slime(SLIME* s, VEC2 pos, int id)
     s->startY = pos.y;
     s->canJump = false;
 
-    s->health = 3; 
+    s->health = 2; 
     s->speed.x = -get_global_speed();
 
     switch(id)
@@ -316,8 +316,20 @@ void slime_update(SLIME* s, float tm)
 /// Get collision with game objects
 void slime_collision(SLIME* s, PLAYER* pl, BULLET* bullets, int bulletLength)
 {
+    // Player-explosion collision
+    if(s->dying && s->id >= 8)
+    {
+        pl_hurt(pl,vec2(s->pos.x-20,s->pos.y-20),vec2(40,40));
+    }
+
     if(s->dead)
         return;
+        
+    
+    // Normal player collision
+    pl_hurt(pl,vec2(s->pos.x-6,s->pos.y-14),vec2(12,14));
+
+    int by1, by2;
 
     // Bullet collision
     int i = 0;
@@ -326,8 +338,19 @@ void slime_collision(SLIME* s, PLAYER* pl, BULLET* bullets, int bulletLength)
         BULLET b = bullets[i];
         if(b.exist == false) continue;
 
+        if(b.id == 1)
+        {
+            by1 = -4;
+            by2 = 4;
+        }
+        else
+        {
+            by1 = -1;
+            by2 = 1;
+        }
+
         if(b.pos.x+10 > s->pos.x-6 && b.pos.x < s->pos.x+6
-            && b.pos.y-1 > s->pos.y-14 && b.pos.y+1 < s->pos.y)
+            && b.pos.y+by2 > s->pos.y-14 && b.pos.y+by1 < s->pos.y)
         {
             bullets[i].exist = false;
             bullets[i].dying = true;
@@ -338,7 +361,7 @@ void slime_collision(SLIME* s, PLAYER* pl, BULLET* bullets, int bulletLength)
             {
                 slime_die(s);
 
-                add_percentage(b.id == 0 ? 20 : 10);
+                add_percentage(b.id == 0 ? 15 : 10);
             }
         }
     }

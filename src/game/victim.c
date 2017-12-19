@@ -74,6 +74,7 @@ void victim_update(VICTIM* v, float tm)
     v->pos.x += v->speed.x * tm;
     v->pos.y += v->speed.y * tm;
 
+    v->canJump = false;
     if(v->speed.y > 0.0f && v->pos.y > 96-12)
     {
         v->pos.y = 96-12;
@@ -125,6 +126,29 @@ void victim_collision(VICTIM* v, BULLET* bullets, int bulletLength)
             bullets[i].exist = false;
             bullets[i].dying = true;
             victim_die(v);
+        }
+    }
+}
+
+/// Get collision with victims & slimes
+void victim_slime_collision(VICTIM* v, SLIME* slimes, int slimeLength)
+{   
+    if(v->dead) return;
+
+    SLIME* o;
+    int i = 0;
+    for(; i < slimeLength; ++ i)
+    {
+        o = &slimes[i];
+        if(o->dying && o->id >= 8)
+        {
+            if(v->pos.x+6 > o->pos.x-16 && v->pos.x-6 < o->pos.x+16
+                && v->pos.y-2 > o->pos.y-24 && v->pos.y-14 < o->pos.y+8)
+            {
+                victim_die(v);
+                shake_screen();
+                break;
+            }
         }
     }
 }

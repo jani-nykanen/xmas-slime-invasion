@@ -6,6 +6,8 @@
 #include "../engine/graphics.h"
 #include "../engine/assets.h"
 
+#include "game.h"
+
 /// Sky
 static BITMAP* bmpSky;
 /// Hills
@@ -19,6 +21,15 @@ static BITMAP* bmpFloor;
 static float bgPos;
 /// Global speed
 static float globalSpeed;
+/// Sky mode
+static int skyMode;
+/// Previous sky mode
+static int prevSkyMode;
+/// Sky change limits
+static int skyChangeLimits[] = 
+{
+    2,5,9,14
+};
 
 /// Initialize stage
 void init_stage()
@@ -30,11 +41,24 @@ void init_stage()
 
     bgPos = 0.0f;
     globalSpeed = 1.0f;
+    skyMode = 0;
+    prevSkyMode = 0;
 }
 
 /// Update stage
 void update_stage(float tm)
 {
+    prevSkyMode = skyMode;
+    int i = 0;
+    skyMode = 0;
+    for(; i < 4; i++)
+    {
+        if(get_kills() >= skyChangeLimits[i])
+        {
+            ++ skyMode;
+        }
+    }
+
     bgPos += globalSpeed * tm;
     if(bgPos >= 512.0f)
         bgPos -= 512.0f;
@@ -45,7 +69,7 @@ void draw_stage()
 {
     int i = 0;
 
-    draw_bitmap(bmpSky,0,0,0);
+    draw_bitmap_region(bmpSky,0,skyMode*64,128,64,0,0,0);
 
     // Hills
     int p = -((int) round(bgPos/4.0f)) % 128;

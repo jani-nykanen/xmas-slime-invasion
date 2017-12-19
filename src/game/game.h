@@ -27,6 +27,10 @@ void add_percentage(int amount);
 /// Add a kill
 void add_kill();
 
+/// Get the amount of kills
+/// > Kills
+int get_kills();
+
 /// Shake screen
 void shake_screen();
 

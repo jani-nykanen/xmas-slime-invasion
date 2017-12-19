@@ -258,6 +258,7 @@ static void game_update(float tm)
     {
         victim_update(&victims[i],tm);
         victim_collision(&victims[i],bullets,BULLET_COUNT);
+        victim_slime_collision(&victims[i],slimes,SLIME_COUNT);
     }
     // Update crystals
     for(i=0; i < CRYSTAL_COUNT; i++)
@@ -409,6 +410,12 @@ void add_percentage(int amount)
 void add_kill()
 {
     ++ kills;
+}
+
+/// Get the amount of kills
+int get_kills()
+{
+    return kills;
 }
 
 /// Shake screen

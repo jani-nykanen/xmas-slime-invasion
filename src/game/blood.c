@@ -14,7 +14,7 @@ BLOOD create_blood()
 }
 
 /// Put a blood to the screen
-void put_blood(BLOOD* b, VEC2 pos, VEC2 speed)
+void put_blood(BLOOD* b, VEC2 pos, VEC2 speed, Uint8 color)
 {
     const float MAX_TIMER = 60.0f;
 
@@ -23,6 +23,7 @@ void put_blood(BLOOD* b, VEC2 pos, VEC2 speed)
     b->exist = true;
     b->timer = MAX_TIMER;
     b->radius = rand() % 2 + 1;
+    b->color = color;
 }
 
 /// Update "a" blood
@@ -46,5 +47,5 @@ void blood_draw(BLOOD* b)
 {
     if(!b->exist) return;
 
-    fill_rect(b->pos.x,b->pos.y,b->radius,b->radius,63);
+    fill_rect(b->pos.x,b->pos.y,b->radius,b->radius,b->color);
 }

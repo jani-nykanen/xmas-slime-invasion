@@ -32,7 +32,7 @@ static void slime_die(SLIME* s)
         create_crystals(vec2(s->pos.x,s->pos.y-8),rand() % 2 + 1);
     }
 
-    create_blood_effect(vec2(s->pos.x,s->pos.y-8),rand() % 8 + 8);
+    create_blood_effect(vec2(s->pos.x,s->pos.y-8),rand() % 8 + 8,63);
 }
 
 /// Animate a slime
@@ -182,7 +182,7 @@ void slime_update(SLIME* s, float tm)
             if(s->id < 8)
             {
             spr_animate(&s->spr,2 + s->id*3,0,6,3,tm);
-            if(s->spr.frame == 5)
+            if(s->spr.frame == 6)
                 s->dying = false;
             }
             else

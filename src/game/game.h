@@ -24,10 +24,17 @@ void create_crystals(VEC2 pos, int count);
 /// < amount Amount
 void add_percentage(int amount);
 
+/// Add a kill
+void add_kill();
+
+/// Shake screen
+void shake_screen();
+
 /// Create some nasty blood
 /// < pos Position
 /// < amount Amount
-void create_blood_effect(VEC2 pos, int amount);
+/// < color Blood color
+void create_blood_effect(VEC2 pos, int amount, Uint8 color);
 
 /// Get game scene
 /// > Game scene

@@ -7,6 +7,7 @@
 #include "../engine/vector.h"
 
 #include "stdbool.h"
+#include "SDL2/SDL.h"
 
 /// Blood type (ehehhehehe)
 typedef struct
@@ -16,6 +17,7 @@ typedef struct
     bool exist;
     float timer;
     int radius;
+    Uint8 color;
 }
 BLOOD;
 
@@ -28,7 +30,8 @@ BLOOD create_blood();
 /// < b Blood
 /// < pos Position
 /// < speed Speed
-void put_blood(BLOOD* b, VEC2 pos, VEC2 speed);
+/// < color Blood color
+void put_blood(BLOOD* b, VEC2 pos, VEC2 speed, Uint8 color);
 
 /// Update "a" blood
 /// < b blood

@@ -20,6 +20,7 @@
 #include "slime.h"
 #include "crystal.h"
 #include "blood.h"
+#include "victim.h"
 
 /// Bitmap font
 static BITMAP* bmpFont;
@@ -31,7 +32,6 @@ static int percentage;
 
 /// Player
 static PLAYER player;
-
 /// Bullet count
 #define BULLET_COUNT 32
 /// Bullets
@@ -48,12 +48,23 @@ static float slimeTimer[SLIME_TIMER_COUNT];
 #define CRYSTAL_COUNT 32
 /// Crystals
 static CRYSTAL crystals[32];
-/// Bomb count
+/// Bomb counter
 static int bombCount;
 /// Blood count
 #define BLOOD_COUNT 128
 /// Blood
 static BLOOD blood[BLOOD_COUNT];
+/// Victim count
+#define VICTIM_COUNT 16
+/// Victimes
+static VICTIM victims[VICTIM_COUNT];
+/// Victim counter
+static int vicCount;
+
+/// Screen shake timer
+static float shakeTimer;
+/// Shake amount
+static int shake;
 
 /// Draw HUD
 static void draw_hud()
@@ -155,6 +166,23 @@ static void push_slime(int index)
     put_slime(s,pos,id);
 }
 
+/// Push victim to the screen
+static void push_victim()
+{
+    VICTIM * v = &victims[0];
+    int i = 0;
+    for(; i < VICTIM_COUNT; i++)
+    {
+        if(victims[i].dead == true && victims[i].dying == false)
+        {
+            v = &victims[i];
+            break;
+        }
+    }
+
+    put_victim(v,vec2(128+6,96-12),rand() % 2);
+}
+
 /// Init game
 static int game_init()
 {
@@ -190,8 +218,13 @@ static int game_init()
     {
         blood[i] = create_blood();
     }
+    for(i=0; i < VICTIM_COUNT; i++)
+    {
+        victims[i] = create_victim();
+    }
 
     bombCount = rand() % 4 + 4;
+    vicCount = rand() % 4 + 4;
 
     return 0;
 }
@@ -220,6 +253,12 @@ static void game_update(float tm)
             slime_to_slime_collision(&slimes[i],&slimes[i2]);
         }
     }
+    // Update victims
+    for(i=0; i < VICTIM_COUNT; i++)
+    {
+        victim_update(&victims[i],tm);
+        victim_collision(&victims[i],bullets,BULLET_COUNT);
+    }
     // Update crystals
     for(i=0; i < CRYSTAL_COUNT; i++)
     {
@@ -236,6 +275,7 @@ static void game_update(float tm)
 
     // Update timers
     float speed = get_global_speed();
+    bool victimCreated = false;
     for(i=0; i < SLIME_TIMER_COUNT; i++)
     {
         slimeTimer[i] -= 1.0f * speed * tm;
@@ -243,17 +283,32 @@ static void game_update(float tm)
         {
             push_slime(i);
             slimeTimer[i] = (float)(rand() % 90 + 40);
+
+            vicCount --;
+            if(!victimCreated && vicCount <= 0)
+            {
+                push_victim();
+                victimCreated = true;
+
+                vicCount = rand() % 8 + 8;
+            }
         }
     }
 
+    // Update shake timer
+    if(shakeTimer > 0.0f)
+        shakeTimer -= 1.0f * tm;
 }
 
 /// Draw game
 void game_draw()
 {
-    clear_frame(0b00101010);
+    clear_frame(0);
 
-    set_translation(0,0);
+    if(shakeTimer <= 0.0f)
+        set_translation(0,0);
+    else
+        set_translation(rand() % (shake*2 +1) - shake,rand() % (shake*2 +1) - shake );
 
     int i = 0;
     // Draw stage
@@ -267,6 +322,11 @@ void game_draw()
     for(i=0; i < SLIME_COUNT; i++)
     {
         slime_post_draw(&slimes[i]);
+    }
+    // Draw victims
+    for(i=0; i < VICTIM_COUNT; i++)
+    {
+        victim_draw(&victims[i]);
     }
     // Draw blood
     for(i=0; i < BLOOD_COUNT; i++)
@@ -286,6 +346,8 @@ void game_draw()
     {
         bullet_draw(&bullets[i]);
     }
+
+    set_translation(0,0);
     // Draw HUD
     draw_hud();
 }
@@ -332,8 +394,32 @@ void create_crystals(VEC2 pos, int count)
     }
 }
 
+/// Add percentage
+void add_percentage(int amount)
+{
+    percentage += amount;
+    if(percentage >= 1000)
+    {
+        percentage = 1000;
+        // Trigger final boss event
+    }
+}
+
+/// Add a kill
+void add_kill()
+{
+    ++ kills;
+}
+
+/// Shake screen
+void shake_screen()
+{
+    shakeTimer = 30.0f + kills*5.0f;
+    shake = 4 + (int)floor(kills/3);
+}
+
 /// Create some nasty blood
-void create_blood_effect(VEC2 pos, int amount)
+void create_blood_effect(VEC2 pos, int amount, Uint8 color)
 {
     VEC2 speed;
 
@@ -348,21 +434,10 @@ void create_blood_effect(VEC2 pos, int amount)
             speed.x = -1.5f + (float)(rand() % 300) / 100.0f;
             speed.y = 0.5f - (float)(rand() % 300 ) / 100.0f;
 
-            put_blood(&blood[i],pos,speed);
+            put_blood(&blood[i],pos,speed,color);
 
             break;
         }
-    }
-}
-
-/// Add percentage
-void add_percentage(int amount)
-{
-    percentage += amount;
-    if(percentage >= 1000)
-    {
-        percentage = 1000;
-        // Trigger final boss event
     }
 }
 

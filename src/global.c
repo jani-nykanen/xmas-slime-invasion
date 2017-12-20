@@ -25,6 +25,7 @@ static int global_init()
     vpad_add_button(1,(int)SDL_SCANCODE_X,0);
     vpad_add_button(2,(int)SDL_SCANCODE_C,3);
     vpad_add_button(3,(int)SDL_SCANCODE_SPACE,1);
+    vpad_add_button(4,(int)SDL_SCANCODE_RETURN,7);
 
     return 0;
 }

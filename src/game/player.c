@@ -239,7 +239,7 @@ PLAYER create_player()
         bmpPlayer = get_bitmap("figure");
 
     PLAYER pl;
-    pl.pos = vec2(32.0f,96-12);
+    pl.pos = vec2(-8.0f,96-12);
     pl.speed = vec2(0.0f,0.0f);
     pl.target = pl.speed;
     pl.canJump = true;
@@ -255,6 +255,7 @@ PLAYER create_player()
     pl.dying = false;
     pl.powerUpId = 0;
     pl.powerUpTimer = 0.0f;
+    pl.startPosReached = false;
 
     return pl;
 }
@@ -270,8 +271,20 @@ void pl_update(PLAYER* pl, float tm)
         return;
     }
 
-    pl_control(pl);
-    pl_move(pl,tm);
+    if(pl->startPosReached)
+    {
+        pl_control(pl);
+        pl_move(pl,tm);
+    }
+    else
+    {
+        pl->pos.x += 0.5f * tm;
+        if(pl->pos.x > 24.0f)
+        {
+            pl->pos.x = 24.0f;
+            pl->startPosReached = true;
+        }
+    }
     pl_animate(pl,tm);
 
     if(pl->hurtTimer > 0.0f)

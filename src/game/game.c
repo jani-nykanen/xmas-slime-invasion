@@ -10,6 +10,8 @@
 #include "../engine/assets.h"
 #include "../engine/transform.h"
 
+#include "../vpad.h"
+
 #include "stdio.h"
 #include "stdlib.h"
 #include "math.h"
@@ -318,7 +320,7 @@ static void game_recreate()
     }
     for(i=0; i < SLIME_TIMER_COUNT; i++)
     {
-        slimeTimer[i] = (float) (rand() % 60 + 30) + i*300;
+        slimeTimer[i] = 90 + i*300;
     }
     for(i=0; i < CRYSTAL_COUNT; i++)
     {
@@ -377,6 +379,12 @@ static void game_update(float tm)
         fadeGoTimer -= 1.0f * tm;
     }
 
+    if(vpad_get_button(4) == PRESSED)
+    {
+        app_swap_scene("pause");
+        return;
+    }
+
     int oldHealth = player.health;
 
     // Update stage
@@ -431,7 +439,7 @@ static void game_update(float tm)
         slimeTimer[i] -= 1.0f * speed * tm;
         if(slimeTimer[i] <= 0.0f)
         {
-            int loop = doubleSlimeTimer >= 900 + 300*i ? 2 : 1;
+            int loop = doubleSlimeTimer >= 300 + 300*i ? 2 : 1;
             for(i2=0; i2 < loop; i2 ++)
                 push_slime(i);
 

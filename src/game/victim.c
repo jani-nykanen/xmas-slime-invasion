@@ -40,7 +40,6 @@ VICTIM create_victim()
 
     v.spr = create_sprite(12,16);
     v.sprWarning = create_sprite(16,16);
-    v.speed.y = -2.5f - (float)(rand() % 100)/100.0f;
 
     return v;
 }
@@ -53,6 +52,7 @@ void put_victim(VICTIM* v, VEC2 pos, int id)
     v->dead = false;
     v->dying = false;
     v->jumpTimer = (float)(rand() % 120 + 30);
+    v->speed.y = -2.5f - (float)(rand() % 100)/100.0f;
 }
 
 /// Update a victim

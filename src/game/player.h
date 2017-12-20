@@ -24,6 +24,7 @@ typedef struct
     bool released;
     bool dead;
     bool dying;
+    bool startPosReached;
 
     int crystals;
     int health;

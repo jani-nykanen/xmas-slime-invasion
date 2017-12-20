@@ -325,6 +325,16 @@ void slime_collision(SLIME* s, PLAYER* pl, BULLET* bullets, int bulletLength)
     if(s->dead)
         return;
         
+    if(!pl->dead && pl->shooting && pl->powerUpTimer > 0.0f && pl->powerUpId == 1)
+    {
+        if(s->pos.x+6 > pl->pos.x+8
+            && s->pos.y-2 > pl->pos.y-9 && s->pos.y-6 < pl->pos.y+8)
+        {
+            slime_die(s);
+            add_percentage(10);
+            return;
+        }
+    }
     
     // Normal player collision
     pl_hurt(pl,vec2(s->pos.x-6,s->pos.y-14),vec2(12,14));

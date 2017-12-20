@@ -24,6 +24,8 @@
 
 /// Bitmap font
 static BITMAP* bmpFont;
+/// Power-up bitmap
+static BITMAP* bmpPowerUp;
 
 /// Kills
 static int kills;
@@ -68,6 +70,27 @@ static int shake;
 
 /// Health change timer
 static float healthChange;
+
+/// Draw power up timer & icon
+static void draw_powerup()
+{
+    float p = player.powerUpTimer / 60.0f;
+
+    int x = 16;
+    int y = 96-9;
+    int w = 32;
+    int h = 8;
+
+    fill_rect(x,y,w,h,63);
+    fill_rect(x+1,y+1,w-2,h-2,0);
+
+    float mw = (w-4) * p;
+    fill_rect(x+2,y+2,(int)mw,h-4,0b00101010);
+    fill_rect(x+2,y+2,(int)mw -1,h-5,63);
+    fill_rect(x+2 + (int)mw +1,y+2,28 - (int)mw -1,h-4,0b00010101);
+
+    draw_bitmap_region(bmpPowerUp,12*player.powerUpId,0,12,12,2,96-12,0);
+}
 
 /// Draw HUD
 static void draw_hud()
@@ -122,6 +145,10 @@ static void draw_hud()
         int pos = (int)(14.0f - 14.0f/60.0f * healthChange);
         draw_text(bmpFont,h,2,-1 - pos,16 + i*13,0,0,false);
     }
+
+    // Power up
+    if(player.powerUpTimer > 0.0f) 
+        draw_powerup();
 }
 
 /// Push slime to the screen
@@ -249,6 +276,8 @@ static void game_recreate()
 static int game_init()
 {
     bmpFont = get_bitmap("font");
+    bmpPowerUp = get_bitmap("powerup");
+
     game_recreate();
 
     return 0;
@@ -284,7 +313,7 @@ static void game_update(float tm)
     for(i=0; i < VICTIM_COUNT; i++)
     {
         victim_update(&victims[i],tm);
-        victim_collision(&victims[i],bullets,BULLET_COUNT);
+        victim_collision(&victims[i],&player,bullets,BULLET_COUNT);
         victim_slime_collision(&victims[i],slimes,SLIME_COUNT);
     }
     // Update crystals
@@ -440,7 +469,7 @@ void add_percentage(int amount)
     int p = get_sky_phase();
     if(p > 0)
     {
-        amount = (int)((float)amount * (1.0f + p*0.25f));
+        amount = (int)((float)amount * (1.0f + p*0.1f));
     }
 
     percentage += amount;

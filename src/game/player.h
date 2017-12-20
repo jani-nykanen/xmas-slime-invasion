@@ -27,8 +27,10 @@ typedef struct
 
     int crystals;
     int health;
+    int powerUpId;
     
     float hurtTimer;
+    float powerUpTimer;
 
     SPRITE spr;
     SPRITE sprArm;

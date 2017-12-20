@@ -42,10 +42,11 @@ void put_victim(VICTIM* v, VEC2 pos, int id);
 void victim_update(VICTIM* v, float tm);
 
 /// Get victim's collision with game objects
+/// < pl Player
 /// < v Victim
 /// < bullets Bullets in an array
 /// < bulletLength The size of the bullet array
-void victim_collision(VICTIM* v, BULLET* bullets, int bulletLength);
+void victim_collision(VICTIM* v, PLAYER* pl, BULLET* bullets, int bulletLength);
 
 /// Get collision with victims & slimes
 /// < v Victim

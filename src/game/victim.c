@@ -109,9 +109,20 @@ void victim_update(VICTIM* v, float tm)
 }
 
 /// Get collision with game objects
-void victim_collision(VICTIM* v, BULLET* bullets, int bulletLength)
+void victim_collision(VICTIM* v, PLAYER* pl, BULLET* bullets, int bulletLength)
 {
     if(v->dead) return;
+
+    if(!pl->dead && pl->shooting  && pl->powerUpTimer > 0.0f && pl->powerUpId == 1)
+    {
+        if(v->pos.x+6 > pl->pos.x+8
+            && v->pos.y-2 > pl->pos.y-9 && v->pos.y-6 < pl->pos.y+8)
+        {
+            victim_die(v);
+            shake_screen();
+            return;
+        }
+    }
 
     // Bullet collision
     int i = 0;

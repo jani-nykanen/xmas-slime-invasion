@@ -98,10 +98,17 @@ static void pl_animate(PLAYER*pl, float tm)
             int type = mode ? 1 : 0;
             float speed = mode ? 2.0f : 4.0f;
 
-            BULLET* b = get_next_bullet();
-            put_bullet(b,vec2(pl->pos.x + (pl->spinning ? -1 : 1) +7,pl->pos.y-16 +8),speed,type);
+            int loop = (pl->powerUpId == 0 && pl->powerUpTimer >= 0.0f) ? 2: 1;
+            int deltaY = loop == 1 ? 0 : -2;
+            if(!mode && pl->powerUpId == 1 && pl->powerUpTimer >= 0.0f)
+                 loop = 0;
 
-            
+            int i = 0;
+            for(; i < loop; ++ i)
+            {
+                BULLET* b = get_next_bullet();
+                put_bullet(b,vec2(pl->pos.x + (pl->spinning ? -1 : 1) +7,pl->pos.y-16 +8 + deltaY + i * 4),speed,type);
+            }
         }
     }
 
@@ -211,6 +218,20 @@ static void pl_die(PLAYER* pl, float tm)
     }
 }
 
+/// Draw laser power up
+/// < pl Player
+void pl_draw_laser(PLAYER* pl)
+{
+    const int colors[] = {0b0011011, 0b0101111, 63, 0b0101111};
+
+    if(!pl->shooting) return;
+
+    int index = (int)floor(pl->powerUpTimer) % 4;
+
+    fill_rect(round(pl->pos.x) + (pl->spinning ? -1 : 1) + 8,round(pl->pos.y)-9,128,3 , colors[index]);
+    fill_rect(round(pl->pos.x) + (pl->spinning ? -1 : 1) + 8,round(pl->pos.y)-9 +1,128,1 , colors[ (index + 1) % 4 ] );
+}
+
 /// Create a player object
 PLAYER create_player()
 {
@@ -232,6 +253,8 @@ PLAYER create_player()
     pl.hurtTimer = 0.0f;
     pl.dead = false;
     pl.dying = false;
+    pl.powerUpId = 0;
+    pl.powerUpTimer = 60.0f;
 
     return pl;
 }
@@ -253,6 +276,9 @@ void pl_update(PLAYER* pl, float tm)
 
     if(pl->hurtTimer > 0.0f)
         pl->hurtTimer -= 1.0f * tm;
+
+    if(pl->powerUpTimer > 0.0f)
+        pl->powerUpTimer -= 0.1f* (pl->powerUpId +1) * tm;
 
     if(pl->health <= 0)
     {
@@ -280,6 +306,9 @@ void pl_draw(PLAYER* pl)
         spr_draw(&pl->sprArm,bmpPlayer,round(pl->pos.x) + (pl->spinning ? -1 : 1),round(pl->pos.y)-16,0);
 
     spr_draw(&pl->spr,bmpPlayer,round(pl->pos.x)-8,round(pl->pos.y)-16,0);
+
+    if(pl->powerUpId == 1 && pl->powerUpTimer > 0.0f)
+        pl_draw_laser(pl);
 
     if(cond)
     {

@@ -21,6 +21,7 @@
 #include "crystal.h"
 #include "blood.h"
 #include "victim.h"
+#include "copter.h"
 
 /// Bitmap font
 static BITMAP* bmpFont;
@@ -46,6 +47,8 @@ static SLIME slimes[32];
 #define SLIME_TIMER_COUNT 4
 /// Slime timers
 static float slimeTimer[SLIME_TIMER_COUNT];
+/// Double slime timer
+static float doubleSlimeTimer;
 /// Crystal count
 #define CRYSTAL_COUNT 32
 /// Crystals
@@ -62,6 +65,10 @@ static BLOOD blood[BLOOD_COUNT];
 static VICTIM victims[VICTIM_COUNT];
 /// Victim counter
 static int vicCount;
+/// Copter
+static COPTER copter;
+/// Copter counter
+static int copterCount;
 
 /// Screen shake timer
 static float shakeTimer;
@@ -223,7 +230,19 @@ static void push_victim()
         }
     }
 
-    put_victim(v,vec2(128+6,96-12),rand() % 2);
+    put_victim(v,vec2(144 - (rand() % 16),96+16),rand() % 2);
+}
+
+/// Push copter to the screen
+static void push_copter()
+{
+    if(!copter.dead || copter.dying) return;
+
+    int x = 128 + 12;
+    int y = 16 + (rand() % (96-44));
+    put_copter(&copter,vec2(x,y));
+    
+    copterCount = 16 + rand() % 16;
 }
 
 /// Recreate game
@@ -249,7 +268,7 @@ static void game_recreate()
     }
     for(i=0; i < SLIME_TIMER_COUNT; i++)
     {
-        slimeTimer[i] = (float) (rand() % 60 + 30) + i*600;
+        slimeTimer[i] = (float) (rand() % 60 + 30) + i*300;
     }
     for(i=0; i < CRYSTAL_COUNT; i++)
     {
@@ -263,12 +282,15 @@ static void game_recreate()
     {
         victims[i] = create_victim();
     }
+    copter = create_copter();
 
     bombCount = rand() % 4 + 4;
     vicCount = rand() % 4 + 4;
     healthChange = 0.0f;
     shakeTimer = 0.0f;
     shake = 0;
+    copterCount = 16 + rand() % 8;
+    doubleSlimeTimer = 0.0f;
 
 }
 
@@ -321,6 +343,9 @@ static void game_update(float tm)
     {
         crystal_update(&crystals[i],&player,tm);
     }
+    // Update copter
+    copter_update(&copter,tm);
+    copter_collision(&copter,&player,bullets,BULLET_COUNT);
     // Update player
     pl_update(&player,tm);
 
@@ -338,7 +363,10 @@ static void game_update(float tm)
         slimeTimer[i] -= 1.0f * speed * tm;
         if(slimeTimer[i] <= 0.0f)
         {
-            push_slime(i);
+            int loop = doubleSlimeTimer >= 900 + 300*i ? 2 : 1;
+            for(i2=0; i2 < loop; i2 ++)
+                push_slime(i);
+
             slimeTimer[i] = (float)(rand() % 120 + 60);
 
             vicCount --;
@@ -349,6 +377,10 @@ static void game_update(float tm)
 
                 vicCount = rand() % 8 + 8;
             }
+
+            copterCount --;
+            if(copterCount <= 0)
+                push_copter();
         }
     }
 
@@ -392,6 +424,8 @@ void game_draw()
     {
         slime_post_draw(&slimes[i]);
     }
+    // Draw copter
+    copter_draw(&copter);
     // Draw victims
     for(i=0; i < VICTIM_COUNT; i++)
     {
@@ -467,10 +501,7 @@ void create_crystals(VEC2 pos, int count)
 void add_percentage(int amount)
 {
     int p = get_sky_phase();
-    if(p > 0)
-    {
-        amount = (int)((float)amount * (1.0f + p*0.1f));
-    }
+    amount = (int)((float)amount * (0.8f + p*0.1f));
 
     percentage += amount;
     if(percentage >= 1000)

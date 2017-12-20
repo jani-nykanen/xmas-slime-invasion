@@ -98,9 +98,9 @@ static void pl_animate(PLAYER*pl, float tm)
             int type = mode ? 1 : 0;
             float speed = mode ? 2.0f : 4.0f;
 
-            int loop = (pl->powerUpId == 0 && pl->powerUpTimer >= 0.0f) ? 2: 1;
+            int loop = (pl->powerUpId == 0 && pl->powerUpTimer > 0.0f) ? 2: 1;
             int deltaY = loop == 1 ? 0 : -2;
-            if(!mode && pl->powerUpId == 1 && pl->powerUpTimer >= 0.0f)
+            if(!mode && pl->powerUpId == 1 && pl->powerUpTimer > 0.0f)
                  loop = 0;
 
             int i = 0;
@@ -254,7 +254,7 @@ PLAYER create_player()
     pl.dead = false;
     pl.dying = false;
     pl.powerUpId = 0;
-    pl.powerUpTimer = 60.0f;
+    pl.powerUpTimer = 0.0f;
 
     return pl;
 }
@@ -278,7 +278,7 @@ void pl_update(PLAYER* pl, float tm)
         pl->hurtTimer -= 1.0f * tm;
 
     if(pl->powerUpTimer > 0.0f)
-        pl->powerUpTimer -= 0.1f* (pl->powerUpId +1) * tm;
+        pl->powerUpTimer -= (0.15f + 0.05f*pl->powerUpId) * tm;
 
     if(pl->health <= 0)
     {
@@ -307,7 +307,7 @@ void pl_draw(PLAYER* pl)
 
     spr_draw(&pl->spr,bmpPlayer,round(pl->pos.x)-8,round(pl->pos.y)-16,0);
 
-    if(pl->powerUpId == 1 && pl->powerUpTimer > 0.0f)
+    if(!pl->dead && pl->powerUpId == 1 && pl->powerUpTimer > 0.0f)
         pl_draw_laser(pl);
 
     if(cond)

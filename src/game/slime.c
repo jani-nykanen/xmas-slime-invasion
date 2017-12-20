@@ -22,6 +22,8 @@ static BITMAP* bmpKaboom = NULL;
 /// < s Slime
 static void slime_die(SLIME* s)
 {
+    if(s->dead) return;
+
     s->dead = true;
     s->dying = true;
     s->spr.frame = 0;

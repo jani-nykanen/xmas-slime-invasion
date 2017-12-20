@@ -16,6 +16,8 @@ static BITMAP* bmpVictim =NULL;
 /// < v Victim
 static void victim_die(VICTIM* v)
 {
+    if(v->dead) return;
+
     v->dead = true;
     v->dying = true;
     v->spr.frame = 0;
@@ -38,6 +40,7 @@ VICTIM create_victim()
 
     v.spr = create_sprite(12,16);
     v.sprWarning = create_sprite(16,16);
+    v.speed.y = -2.5f - (float)(rand() % 100)/100.0f;
 
     return v;
 }

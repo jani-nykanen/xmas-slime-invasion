@@ -143,6 +143,9 @@ void ctr_on_joy_down(int button)
     if(button < 0 || button >= JOYMAX || joystate[button] == DOWN) return;
 
     joystate[button] = PRESSED;
+
+    anyPressed = true;
+    anyDown = true;
 }
 
 
@@ -152,6 +155,9 @@ void ctr_on_joy_up(int button)
     if(button < 0 || button >= JOYMAX || joystate[button] == UP) return;
     
     joystate[button] = RELEASED;
+
+    anyReleased = true;
+    anyDown = false;
 }
 
 /// Joystick axis movement
@@ -194,7 +200,7 @@ void ctr_update()
         if(i < JOYMAX)
         {
             if(joystate[i] == RELEASED)
-            joystate[i] = UP;
+                joystate[i] = UP;
 
             else if(joystate[i] == PRESSED)
                 joystate[i] = DOWN;

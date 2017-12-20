@@ -27,6 +27,8 @@
 static BITMAP* bmpFont;
 /// Power-up bitmap
 static BITMAP* bmpPowerUp;
+/// Game Over! logo
+static BITMAP* bmpGameOver;
 
 /// Kills
 static int kills;
@@ -75,8 +77,56 @@ static float shakeTimer;
 /// Shake amount
 static int shake;
 
+/// Is the game over
+static bool gameOver;
+/// Game over timer
+static float goverTimer;
+/// Game Over! frame
+static FRAME* goFrame;
+/// Draw HUD
+static bool drawHud;
+/// Fade game over timer
+static float fadeGoTimer;
+
 /// Health change timer
 static float healthChange;
+
+/// Forward declarations
+static void game_recreate();
+
+/// Draw game over
+static void draw_gameover()
+{
+    draw_inverted_bitmap((BITMAP*)goFrame,0,0,0);
+
+    if(goverTimer > 0.0f)
+    {
+        int skip = (int)floor(goverTimer / 5.0f) +1;
+        draw_skipped_bitmap_region((BITMAP*)goFrame,0,0,128,96,0,0,skip,skip,0);
+
+        skip = 5.0f - ((int)floor(goverTimer / 5.0f));
+        draw_skipped_bitmap_region((BITMAP*)bmpGameOver,0,0,128,16,0,24,skip,skip,0);
+    }
+    else
+    {   
+        draw_bitmap(bmpGameOver,0,24,0);
+    }
+}
+
+/// Update game over
+static void update_gameover(float tm)
+{
+    if(goverTimer > 0.0f)
+        goverTimer -= 1.0f * tm;
+
+    if(goverTimer <= 0.0f && any_pressed())
+    {
+        gameOver = false;
+        copy_frame(app_get_canvas(),goFrame);
+        game_recreate();
+        fadeGoTimer = 30.0f;
+    }
+}
 
 /// Draw power up timer & icon
 static void draw_powerup()
@@ -291,7 +341,9 @@ static void game_recreate()
     shake = 0;
     copterCount = 16 + rand() % 8;
     doubleSlimeTimer = 0.0f;
-
+    gameOver = false;
+    drawHud = true;
+    goverTimer = 0.0f;
 }
 
 /// Init game
@@ -299,6 +351,12 @@ static int game_init()
 {
     bmpFont = get_bitmap("font");
     bmpPowerUp = get_bitmap("powerup");
+    bmpGameOver = get_bitmap("gameover");
+
+    goFrame = frame_create(128,96);
+    if(goFrame == NULL) return 1;
+
+    fadeGoTimer = 0.0f;
 
     game_recreate();
 
@@ -309,6 +367,16 @@ static int game_init()
 /// tm Time multiplier
 static void game_update(float tm)
 {
+    if(gameOver)
+    {
+        update_gameover(tm);
+        return;
+    }
+    else if(fadeGoTimer > 0.0f)
+    {
+        fadeGoTimer -= 1.0f * tm;
+    }
+
     int oldHealth = player.health;
 
     // Update stage
@@ -397,7 +465,12 @@ static void game_update(float tm)
     // Game over!
     if(player.dead && !player.dying)
     {
-        game_recreate();
+        drawHud = false;
+        game_draw();
+        copy_frame(get_current_frame(),goFrame);
+        drawHud = true;
+        goverTimer = 30.0f;
+        gameOver = true;
     }
 }
 
@@ -405,6 +478,12 @@ static void game_update(float tm)
 void game_draw()
 {
     clear_frame(0);
+
+    if(gameOver)
+    {
+        draw_gameover();
+        return;
+    }
 
     if(shakeTimer <= 0.0f)
         set_translation(0,0);
@@ -452,7 +531,15 @@ void game_draw()
 
     set_translation(0,0);
     // Draw HUD
-    draw_hud();
+    if(drawHud)
+        draw_hud();
+
+    // Draw fading game over screen
+    if(fadeGoTimer > 0.0f)
+    {
+        int skip = (int)floor(fadeGoTimer / 5.0f) +1;
+        draw_skipped_bitmap_region((BITMAP*)goFrame,0,0,128,96,0,0,skip,skip,0);
+    }
 }
 
 /// Destroy game

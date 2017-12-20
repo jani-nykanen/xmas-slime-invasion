@@ -12,3 +12,4 @@ bitmap crystal assets/bitmaps/crystal.png
 bitmap kaboom assets/bitmaps/kaboom.png
 bitmap victim assets/bitmaps/victim.png
 bitmap powerup assets/bitmaps/powerup.png
+bitmap gameover assets/bitmaps/gameover.png

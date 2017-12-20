@@ -126,7 +126,7 @@ static void app_calc_canvas_prop(int winWidth, int winHeight)
 static int app_init_SDL()
 {   
     // Init
-    if(SDL_Init(SDL_INIT_EVENTS | SDL_INIT_VIDEO) != 0)
+    if(SDL_Init(SDL_INIT_EVENTS | SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) != 0)
     {
         SDL_ShowSimpleMessageBox( SDL_MESSAGEBOX_ERROR,"Error!","Failed to init SDL!\n",NULL);
         return 1;
@@ -151,7 +151,7 @@ static int app_init_SDL()
     // app_toggle_fullscreen();
 
     // Create renderer
-    rend = SDL_CreateRenderer(window,-1,SDL_RENDERER_SOFTWARE);
+    rend = SDL_CreateRenderer(window,-1,SDL_RENDERER_ACCELERATED);
     if(rend == NULL)
     {
         SDL_ShowSimpleMessageBox( SDL_MESSAGEBOX_ERROR,"Error!","Failed to create an SDL renderer!\n",NULL);
@@ -160,6 +160,13 @@ static int app_init_SDL()
 
     // Hide mouse cursor
     SDL_ShowCursor(0);
+
+    // Open joystick
+    joy = SDL_JoystickOpen(0);
+    if(joy == NULL)
+    {
+        printf("No joystick detected\n");
+    }
 
     return 0;
 }
@@ -272,6 +279,65 @@ static void app_events()
         case SDL_KEYUP:
             ctr_on_key_up(event.key.keysym.scancode);
             break;
+
+        // Joy button down
+        case SDL_JOYBUTTONDOWN:
+            ctr_on_joy_down(event.jbutton.button);
+            break;
+
+        // Joy button up
+        case SDL_JOYBUTTONUP:
+            ctr_on_joy_up(event.jbutton.button);
+            break;
+
+        // Joy axis
+        case SDL_JOYAXISMOTION:
+        {
+            int axis = 0;
+            if(event.jaxis.axis == 0)
+                axis = 0;
+            else if(event.jaxis.axis == 1)
+                axis = 1;
+            else 
+                break;
+
+            float value = (float)event.jaxis.value / 32767.0f;
+
+            ctr_on_joy_axis(axis,value);
+            
+            break;
+        }
+
+        // Joy hat
+        case SDL_JOYHATMOTION:
+        {
+            int v = event.jhat.value;
+            VEC2 stick = vec2(0.0f,0.0f);
+            if(v == SDL_HAT_LEFTUP || v == SDL_HAT_LEFT || v == SDL_HAT_LEFTDOWN)
+            {
+                stick.x = -1.0f;
+            }
+
+            if(v == SDL_HAT_RIGHTUP || v == SDL_HAT_RIGHT || v == SDL_HAT_RIGHTDOWN)
+            {
+                stick.x = 1.0f;
+            }
+
+            if(v == SDL_HAT_LEFTUP || v == SDL_HAT_UP || v == SDL_HAT_RIGHTUP)
+            {
+                stick.y = -1.0f;
+            }
+
+            if(v == SDL_HAT_LEFTDOWN || v == SDL_HAT_DOWN || v == SDL_HAT_RIGHTDOWN)
+            {
+                stick.y = 1.0f;
+            }
+
+            ctr_on_joy_axis(0,stick.x);
+            ctr_on_joy_axis(1,stick.y);
+
+            break;
+        }
 
         default:
             break;

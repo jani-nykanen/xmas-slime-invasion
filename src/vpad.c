@@ -62,7 +62,7 @@ void vpad_update()
     if(hypot(jstick.x,jstick.y) > 0.1f)
     {
         stick.x = jstick.x;
-        stick.y = jstick.y;
+        stick.y = jstick.y;   
     }
 
     delta.x = stick.x - oldStick.x;

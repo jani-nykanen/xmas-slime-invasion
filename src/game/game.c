@@ -197,12 +197,12 @@ static void draw_hud()
     Uint8 h[] = {7,8};
     for(; i < player.health; i++)
     {
-        draw_text(bmpFont,h,2,-1,16 + i*13,0,0,false);
+        draw_text(bmpFont,h,2,-1 + i*12,14,0,0,false);
     }
     if(healthChange > 0.0f)
     {
-        int pos = (int)(14.0f - 14.0f/60.0f * healthChange);
-        draw_text(bmpFont,h,2,-1 - pos,16 + i*13,0,0,false);
+        int pos = (int)(24.0f - 24.0f/60.0f * healthChange);
+        draw_text(bmpFont,h,2,-1 + i*12,14 - pos,0,0,false);
     }
 
     // Power up

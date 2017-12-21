@@ -384,6 +384,34 @@ void fill_rect(int x, int y, int w, int h, Uint8 index)
     }
 }
 
+/// Fill a skipped rectangle
+void fill_skipped_rect(int x, int y, int w, int h, int skipx, int skipy, Uint8 index)
+{
+        x += transX;
+    y += transY;
+
+    int dx = x;
+    int dy = y;
+
+    int skipxCount = 0;
+    int skipyCount = 0;
+
+    // Go though every pixel and put them to a frame
+    for(; dy < y+h; dy++)
+    {
+        for(dx = x; dx < x+w; dx++)
+        {
+            
+            if(skipx == 0 || (skipxCount % skipx != 0 && (skipy == 0 || skipyCount % skipy != 0) ))
+            {
+                ppfunc(dx,dy,index);
+            }
+            skipxCount ++;
+        }
+        skipyCount ++;
+    } 
+}
+
 /// Draw a line
 void draw_line(int x1, int y1, int x2, int y2, Uint8 color)
 {

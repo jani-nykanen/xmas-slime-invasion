@@ -25,6 +25,9 @@ static FRAME* frameBg;
 static BITMAP* bmpLogo;
 /// Font bitmap
 static BITMAP* bmpFont;
+/// Cursor bitmap
+static BITMAP* bmpCursor;
+
 /// Is the frame drawn
 static bool frameDrawn;
 /// Float timer
@@ -33,6 +36,8 @@ static float floatTimer;
 static int titlePhase;
 /// Title timer
 static float titleTimer;
+/// Cursor pos
+static int cursorPos;
 
 /// Swap scene event
 static void title_on_swap()
@@ -40,6 +45,7 @@ static void title_on_swap()
     titlePhase = 0;
     floatTimer = 0.0f;
     titleTimer = 0.0f;
+    cursorPos = 0;
 }
 
 /// Initialize title scene
@@ -55,6 +61,7 @@ static int title_init()
 
     bmpLogo = get_bitmap("logo");
     bmpFont = get_bitmap("font2");
+    bmpCursor = get_bitmap("cursor");
 
     title_on_swap();
 
@@ -65,7 +72,10 @@ static int title_init()
 /// < tm Time mul.
 static void title_update(float tm)
 {
-    
+    if(titlePhase == 1 || titlePhase == 2)
+    {
+        floatTimer += 0.033f * tm;
+    }
 
     switch(titlePhase)
     {
@@ -81,7 +91,6 @@ static void title_update(float tm)
     break;
     
     case 1:
-        floatTimer += 0.033f * tm;
         if(any_pressed())
         {
             titlePhase ++;
@@ -93,9 +102,26 @@ static void title_update(float tm)
     {
         if(vpad_get_button(4) == PRESSED || vpad_get_button(1) == PRESSED)
         {
-            titlePhase ++;
-            floatTimer = 0.0f;
+            switch(cursorPos)
+            {
+            case 0:
+                titlePhase ++;
+                floatTimer = 0.0f;
+            break;
+
+            case 2:
+                app_terminate();
+
+            default:
+                break;
+            }
+            
         }
+
+        if(cursorPos < 2 && vpad_get_delta().y > 0.0f && vpad_get_stick().y > 0.0f)
+            cursorPos ++;
+        else if(cursorPos > 0 && vpad_get_delta().y < 0.0f && vpad_get_stick().y < 0.0f)
+            cursorPos --;
     }
     break;
 
@@ -143,12 +169,32 @@ static void title_draw()
     {
         y = -56 + 58*t;
     }
-    draw_scaled_bitmap_region(bmpLogo,0,0,128,96,-128*(scale-1.0f)/2,y -96*(scale-1.0f)/2,128*scale,96*scale);
+
+    int bw = bmpLogo->w;
+    int bh = bmpLogo->h;
+    draw_scaled_bitmap_region(bmpLogo,0,0,bw,bh,-bw*(scale-1.0f)/2,y -bh*(scale-1.0f)/2,bw*scale,bh*scale);
 
     y = titlePhase == 1 ? 72 : (int)(96 - 24*t);
-    if(titlePhase == 1 && (int)floor(floatTimer) %2 == 0)
+    if(titlePhase == 0 || ( titlePhase == 1 && (int)floor(floatTimer) %2 == 0) )
     {
         draw_text(bmpFont,(Uint8*)"Press Any Key",13,64,y,-1,0,true);
+    }
+
+    if(titlePhase >= 2)
+    {
+        y = (int)(96 - 40*t);
+
+        draw_text(bmpFont,(Uint8*)"Play",13,40,y,-1,0,false);
+        draw_text(bmpFont,(Uint8*)"Audio: On",13,40,y+14,-1,0,false);
+        draw_text(bmpFont,(Uint8*)"Quit",13,40,y+28,-1,0,false);
+
+        draw_bitmap(bmpCursor,26,y + cursorPos*14,0);
+    }
+
+    if(titlePhase == 0 && titleTimer < 30.0f)
+    {
+        int skip = (int)floor( (titleTimer-30.0f) / 5.0f);
+        fill_skipped_rect(0,0,128,96,skip,skip,0);
     }
 }
 

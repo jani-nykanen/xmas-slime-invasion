@@ -133,6 +133,16 @@ void draw_text(BITMAP* b, Uint8* text, int len, int dx, int dy, int xoff, int yo
 /// < index Color index
 void fill_rect(int x, int y, int w, int h, Uint8 index);
 
+/// Fill a skipped rectangle
+/// < x X coordinate
+/// < y Y coordinate
+/// < w Width
+/// < h Height
+/// < skipx Skip horizontal pixels
+/// < skipy Skip vertical pixels
+/// < index Color index
+void fill_skipped_rect(int x, int y, int w, int h, int skipx, int skipy, Uint8 index);
+
 /// Draw a line
 /// < x1 X coordinate 1
 /// < y1 Y coordinate 1

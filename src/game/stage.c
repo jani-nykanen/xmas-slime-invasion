@@ -6,6 +6,7 @@
 #include "../engine/graphics.h"
 #include "../engine/assets.h"
 #include "../engine/controls.h"
+#include "../engine/app.h"
 
 #include "game.h"
 
@@ -144,6 +145,11 @@ void update_stage(PLAYER* pl, float tm)
             else
             {
                 blackTimer += 1.0f * tm;
+                if(blackTimer >= 400.0f)
+                {
+                    app_swap_scene("title");
+                    return;
+                }
             }
 
             

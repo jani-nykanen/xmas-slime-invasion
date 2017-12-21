@@ -102,9 +102,6 @@ static bool cursorPos;
 /// Health change timer
 static float healthChange;
 
-/// Forward declarations
-static void game_recreate();
-
 /// Draw game over
 /// TODO: This should actually be an external scene,
 /// just like pause, but I was lazy
@@ -155,7 +152,7 @@ static void update_gameover(float tm)
             }
             else
             {
-                app_terminate();
+                app_swap_scene("title");
             }
         }
     }
@@ -330,7 +327,7 @@ static void push_copter()
 }
 
 /// Recreate game
-static void game_recreate()
+void game_recreate()
 {
     srand(time(NULL));
 
@@ -396,6 +393,7 @@ static int game_init()
     fadeGoTimer = 0.0f;
 
     game_recreate();
+    drawHud = false;
 
     return 0;
 }
@@ -414,7 +412,7 @@ static void game_update(float tm)
         fadeGoTimer -= 1.0f * tm;
     }
 
-    if(vpad_get_button(4) == PRESSED)
+    if(!player.dead && !victory && vpad_get_button(4) == PRESSED)
     {
         app_swap_scene("pause");
         return;
@@ -595,6 +593,8 @@ void game_draw()
     {
         bullet_draw(&bullets[i]);
     }
+    // "Post draw" stage (for ending)
+    post_draw_stage();
 
     set_translation(0,0);
     // Draw HUD
@@ -613,6 +613,12 @@ void game_draw()
 static void game_destroy()
 {
     destroy_assets();
+}
+
+/// Scene swapped
+static void game_on_swap()
+{
+    drawHud = true;
 }
 
 /// Get the next nonexistent bullet in the array
@@ -713,11 +719,18 @@ void create_blood_effect(VEC2 pos, int amount, Uint8 color)
     }
 }
 
+/// Get the game over frame
+FRAME* get_gameover_frame()
+{
+    fadeGoTimer = 30.0f;
+    return goFrame;
+}
+
 /// Get game scene
 SCENE get_game_scene()
 {
     // Set scene functions
-    SCENE s = (SCENE){game_init,game_update,game_draw,game_destroy};
+    SCENE s = (SCENE){game_init,game_update,game_draw,game_destroy,game_on_swap};
 
     // Set scene name
     set_scene_name(&s,"game");

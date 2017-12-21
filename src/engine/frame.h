@@ -40,4 +40,8 @@ void frame_update_tex(FRAME* fr);
 /// < d Destination
 void copy_frame(FRAME* s, FRAME* d);
 
+/// Invert frame
+/// < f Frame
+void invert_frame(FRAME* f);
+
 #endif // __FRAME__

@@ -16,8 +16,10 @@ void init_stage();
 void update_stage(PLAYER* pl, float tm);
 
 /// Draw stage
-/// < cam Camera
 void draw_stage();
+
+/// Post draw stage
+void post_draw_stage();
 
 /// Get global speed
 /// > Global speed

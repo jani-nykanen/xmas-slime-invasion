@@ -131,3 +131,17 @@ void copy_frame(FRAME* s, FRAME* d)
         d->colorData[i] = s->colorData[i];
     }
 }
+
+/// Invert frame
+void invert_frame(FRAME* f)
+{
+    int i = 0;
+    Uint8 index;
+    for(; i < f->w*f->h; ++ i)
+    {
+        index = f->colorData[i];
+        index = ~index;
+        index = index & 0b00111111;
+        f->colorData[i] = index;
+    }
+}

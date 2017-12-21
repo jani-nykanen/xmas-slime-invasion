@@ -141,32 +141,19 @@ void fill_rect(int x, int y, int w, int h, Uint8 index);
 /// < color Color index
 void draw_line(int x1, int y1, int x2, int y2, Uint8 color);
 
-/// Draw triangle
+/// Draw a colored triangle
 /// < x1 X coordinate 1
 /// < y1 Y coordinate 1
 /// < x2 X coordinate 2
 /// < y2 Y coordinate 2
 /// < x3 X coordinate 3
 /// < y3 Y coordinate 3
-void draw_triangle(int x1, int y1, int x2, int y2, int x3, int y3);
+void draw_triangle(int x1, int y1, int x2, int y2, int x3, int y3, Uint8 color);
 
 /// Set translation
 /// < x Horizontal
 /// < y Vertical
 void set_translation(int x, int y);
-
-/// Bind a texture
-/// < tex Texture to bind
-void bind_texture(BITMAP* tex);
-
-/// Bind uv coordinates
-/// < x1 X coordinate 1
-/// < y1 Y coordinate 1
-/// < x2 X coordinate 2
-/// < y2 Y coordinate 2
-/// < x3 X coordinate 3
-/// < y3 Y coordinate 3
-void set_uv(float x1, float y1, float x2, float y2, float x3, float y3);
 
 
 #endif // __GRAPHICS__

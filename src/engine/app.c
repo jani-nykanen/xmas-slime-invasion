@@ -429,6 +429,8 @@ void app_swap_scene(const char* name)
         if(strcmp(scenes[i].name,name) == 0)
         {
             currentScene = scenes[i];
+            if(currentScene.on_swap != NULL)
+                currentScene.on_swap();
             return;
         }
     }

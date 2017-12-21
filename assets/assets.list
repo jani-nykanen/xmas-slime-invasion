@@ -17,3 +17,4 @@ bitmap gameover assets/bitmaps/gameover.png
 bitmap cursor assets/bitmaps/cursor.png
 bitmap house assets/bitmaps/house.png
 bitmap victory assets/bitmaps/victory.png
+bitmap logo assets/bitmaps/logo.png

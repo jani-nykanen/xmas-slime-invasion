@@ -24,18 +24,9 @@ static int transX;
 /// Translate y
 static int transY;
 
-/// Global texture used in drawing filled polygons
-static BITMAP* gtex;
-
 /// Put pixel function
 static void (*ppfunc) (int,int,Uint8);
 
-/// Matrix
-static MAT2 invM;
-/// UV coords
-static VEC2 uv1, uv2, uv3;
-/// UV translation
-static VEC2 UVtrans;
 
 /// Put pixel to the screen
 /// < x X coordinate
@@ -45,50 +36,6 @@ static void put_pixel(int x, int y, Uint8 index)
 {
     if(index == 255 || x < 0 || y < 0 || x >= gframe->w || y >= gframe->h) return;
     gframe->colorData[y*gframe->w+x] = index;
-}
-
-/// Generate inverse matrix
-/// < x1 X coordinate 1
-/// < y1 Y coordinate 1
-/// < x2 X coordinate 2
-/// < y2 Y coordinate 2
-/// < x3 X coordinate 3
-/// < y3 Y coordinate 3
-static void gen_matrix(int x1, int y1, int x2, int y2, int x3, int y3)
-{
-    BITMAP* b = gtex;
-
-    // UV matrix
-    MAT2 uv = mat2(
-        (uv3.x-uv1.x), (uv2.x-uv1.x),
-        (uv3.y-uv1.y), (uv2.y-uv1.y)
-    );
-    MAT2 uvInv = mat2_inverse(uv);
-
-    // U ja V vectors
-    VEC2 u = vec2((x3-x1),(y3-y1));
-    VEC2 v = vec2((x2-x1),(y2-y1));
-
-    // Basis
-    MAT2 basis = mat2(
-        u.x, v.x,
-        u.y, v.y
-    );
-
-    // Scale
-    MAT2 scale = mat2(
-        1.0f/b->w,0.0f,
-        0.0f, 1.0/b->h
-    );
-
-    UVtrans = vec2(uv1.x * b->w, uv1.y * b->h);
-
-    // Final matrix
-    MAT2 m = mat2_mul(basis,uvInv);
-    m = mat2_mul(scale,m);
-
-    // Inverse matrix
-    invM = mat2_inverse(m);
 }
 
 /// Initialize graphics
@@ -463,10 +410,8 @@ void draw_line(int x1, int y1, int x2, int y2, Uint8 color)
 
 
 /// Draw a textured triangle
-static void _draw_triangle(int x1, int y1, int x2, int y2, int x3, int y3, int spc)
+static void _draw_triangle(int x1, int y1, int x2, int y2, int x3, int y3, Uint8 color, int spc)
 {
-    BITMAP* b = gtex;
-
     // Calculate minimums & maximums
     int maxy = max(y1,max(y2,y3));
     int miny = min(y1,min(y2,y3));
@@ -522,43 +467,14 @@ static void _draw_triangle(int x1, int y1, int x2, int y2, int x3, int y3, int s
     // Is the top or bottom flat
     bool flat = py1 == py2 || py2 == py3 || py1 == py3;
 
-    Uint8 col = 63;
-
-    // Texture coordinates in bitmap
-    int tx = 0;
-    int ty = 0;
-
-    // Translated coordinates
-    int xx, yy;
-
     // Draw visible pixels
     for(y = miny; y <= min(maxy,gframe->h); y++)
     {
-
         if(y >= 0)
         {
             for(x = max(0,(int)startx); x <= min(gframe->w,(int)endx); x++)
             {
-                // Translate point
-                xx = x - x1;
-                yy = y - y1;
-
-                // Get texture coordinates
-                tx = (int)(invM.m11 * xx + invM.m21 * yy);
-                ty = (int)(invM.m12 * xx + invM.m22 * yy);
-
-                tx += UVtrans.x;
-                ty += UVtrans.y;
-
-                // If texture coords are outside the
-                // texture area, force them back!
-                while(tx >= b->w) tx -= b->w;
-                while(ty >= b->h) ty -= b->h;
-                while(tx < 0) tx += b->w;
-                while(ty < 0) ty += b->h;
-
-                col = b->data[ty*b->w +tx];
-                ppfunc(x,y,col);
+                ppfunc(x,y,color);
             }
         }
 
@@ -575,13 +491,13 @@ static void _draw_triangle(int x1, int y1, int x2, int y2, int x3, int y3, int s
 
         if(spc != 2 && startx-endx > 1)
         {
-            _draw_triangle(x1,y1,x2,y2,x3,y3,spc+1);
+            _draw_triangle(x1,y1,x2,y2,x3,y3,color,spc+1);
             return;
         }
     }
 }
 /// Draw a textured triangle (actual definition)
-void draw_triangle(int x1, int y1, int x2, int y2, int x3, int y3)
+void draw_triangle(int x1, int y1, int x2, int y2, int x3, int y3, Uint8 color)
 {
     x1 += transX;
     y1 += transY;
@@ -599,9 +515,7 @@ void draw_triangle(int x1, int y1, int x2, int y2, int x3, int y3)
 
     if(ux*vy - uy * vx == 0) return;
 
-    gen_matrix(x1,y1,x2,y2,x3,y3);
-
-    _draw_triangle(x1,y1,x2,y2,x3,y3,0);
+    _draw_triangle(x1,y1,x2,y2,x3,y3,color,0);
 }
 
 /// Set translation
@@ -609,34 +523,4 @@ void set_translation(int x, int y)
 {
     transX = x;
     transY = y;
-}
-
-/// Bind a texture
-void bind_texture(BITMAP* tex)
-{
-    gtex = tex;
-}
-
-/// Bind uv coordinates
-void set_uv(float x1, float y1, float x2, float y2, float x3, float y3)
-{
-    const float DELTA = 0.001f;
-
-    uv1 = vec2(x1,y1);
-    uv2 = vec2(x2,y2);
-    uv3 = vec2(x3,y3);
-
-    // Check if vectors are not linearly dependaple
-    float ux = (x2-x1);
-    float uy = (y2-y1);
-
-    float vx = (x3-x1);
-    float vy = (y3-y1);
-
-    if(fabs(ux*vy - uy * vx) < DELTA)
-    {
-        uv1 = vec2(0.0f,0.0f);
-        uv2 = vec2(0.0001f,0.0f);  
-        uv3 = vec2(0.0f,0.0001f);
-    }
 }

@@ -5,6 +5,7 @@
 
 #include "../engine/graphics.h"
 #include "../engine/assets.h"
+#include "../engine/controls.h"
 
 #include "game.h"
 
@@ -42,6 +43,8 @@ static float skyChangeTimer;
 static float housePos;
 /// Victory pos
 static float victoryPos;
+/// Black timer
+static float blackTimer;
 
 /// Initialize stage
 void init_stage()
@@ -61,6 +64,7 @@ void init_stage()
     housePos = 256.0f;
     victoryPos = -32.0f;
     endingSkyChanged = false;
+    blackTimer = 0.0f;
 }
 
 /// Update stage
@@ -106,6 +110,12 @@ void update_stage(PLAYER* pl, float tm)
         globalSpeed = pl->dead ? 0.0f : 1.0f + skyMode*0.2f;
     else
     {
+        if(get_key_state((int)SDL_SCANCODE_L) == PRESSED)
+            {
+                victoryPos = 0.0f;
+                housePos = 8;
+                globalSpeed = 0.0f;
+            }
 
         if(housePos > 8)
         {
@@ -131,6 +141,12 @@ void update_stage(PLAYER* pl, float tm)
                 if(victoryPos > 0.0f)
                     victoryPos = 0.0f;
             }
+            else
+            {
+                blackTimer += 1.0f * tm;
+            }
+
+            
         }
     }
 
@@ -193,6 +209,49 @@ void draw_stage()
         {
             draw_bitmap(bmpVictory,0,victoryPos,0);
         }
+    }
+}
+
+/// Post draw stage
+void post_draw_stage()
+{
+    if(victoryPos < 0.0f || blackTimer < 120.0f) return;
+
+    float t = blackTimer - 120.0f;
+    if(blackTimer >= 330.0f) t -= 120.0f;
+    if(blackTimer > 210.0f && blackTimer < 330.0f) 
+        t = 90.0f;
+    else if(t > 120.0f) 
+        t = 120.0f;
+
+    t /= 120.0f;
+
+    float angle = 0.0f;
+    float r = 128 * (1.0f - t);
+
+    int x1,y1,x2,y2,x3,y3,x4,y4;
+
+    int cx = 32;
+    int cy = 96-20;
+
+    float step = (M_PI*2)/20.0f;
+
+    for(; angle <= M_PI * 2; angle += step)
+    {
+        x1 = cx + (int)(cos(angle) * r);
+        y1 = cy + (int)(sin(angle) * r);
+
+        x2 = cx + (int)(cos(angle+step) * r);
+        y2 = cy + (int)(sin(angle+step) * r);
+
+        x3 = cx + (int)(cos(angle+step) * (128) );
+        y3 = cy + (int)(sin(angle+step) * (128) );
+
+        x4 = cx + (int)(cos(angle) * (128) );
+        y4 = cy + (int)(sin(angle) * (128) );
+
+        draw_triangle(x1,y1,x2,y2,x3,y3,0);
+        draw_triangle(x3,y3,x4,y4,x1,y1,0);
     }
 }
 

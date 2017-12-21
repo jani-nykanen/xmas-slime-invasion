@@ -44,7 +44,9 @@ static void pause_update(float tm)
         if(!cursorPos)
             app_swap_scene("game");
         else
-            app_terminate();
+        {
+            app_swap_scene("title");
+        }
     }
 
     float stick = vpad_get_stick().y * (cursorPos ? -1 : 1);

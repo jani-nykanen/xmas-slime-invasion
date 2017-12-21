@@ -5,8 +5,12 @@
 #define __GAME_SCENE__
 
 #include "../engine/scene.h"
+#include "../engine/frame.h"
 
 #include "bullet.h"
+
+/// Recreate game
+void game_recreate();
 
 /// Draw game
 void game_draw();
@@ -43,6 +47,10 @@ bool is_victory();
 /// < amount Amount
 /// < color Blood color
 void create_blood_effect(VEC2 pos, int amount, Uint8 color);
+
+/// Get the game over frame
+/// > Frame
+FRAME* get_gameover_frame();
 
 /// Get game scene
 /// > Game scene

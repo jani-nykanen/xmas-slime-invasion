@@ -11,6 +11,7 @@ typedef struct
     void (*on_update) (float tm); /// Update
     void (*on_draw) (); /// Draw
     void (*on_destroy) (void); /// Destroy
+    void (*on_swap) (void); /// Scene swapped
     char name[8]; /// Scene name
 }
 SCENE;

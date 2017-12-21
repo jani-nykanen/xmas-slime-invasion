@@ -4,14 +4,16 @@
 #ifndef __STAGE__
 #define __STAGE__
 
+#include "player.h"
+
 /// Initialize stage
 void init_stage();
 
 /// Update stage
-/// < b Ball
+/// < pl Player
 /// < cam Camera
 /// < tm Time mul.
-void update_stage(float tm);
+void update_stage(PLAYER* pl, float tm);
 
 /// Draw stage
 /// < cam Camera

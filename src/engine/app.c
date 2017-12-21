@@ -60,8 +60,8 @@ static SDL_Joystick* joy;
 static void ask_to_quit()
 {
     const SDL_MessageBoxButtonData buttons[] = {
-        { 0, 0, "Yeah!" },
-        { SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 1, "Nope" },
+        { 0, 0, "Yes" },
+        { SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 1, "No" },
         
     };
     const SDL_MessageBoxColorScheme colorScheme = {
@@ -77,8 +77,8 @@ static void ask_to_quit()
     const SDL_MessageBoxData messageboxdata = {
         SDL_MESSAGEBOX_INFORMATION,
         NULL, 
-        "Quit already?", 
-        "Are you sure you want to quit?", 
+        "Quit application?", 
+        "Are you sure you want to\nterminate the application?", 
         SDL_arraysize(buttons),
         buttons,
         &colorScheme
@@ -259,7 +259,8 @@ static void app_events()
         {
         // Application quit
         case SDL_QUIT:
-            isRunning = false;
+            ask_to_quit();
+            // isRunning = false;
             return;
 
         // Window event (resize etc)
@@ -378,11 +379,6 @@ static void app_update(Uint32 delta)
     if(globalScene.on_update != NULL)
     {
         globalScene.on_update(tm);
-    }
-    
-    if(get_key_state((int)SDL_SCANCODE_ESCAPE) == PRESSED)
-    {
-        ask_to_quit();
     }
 
     ctr_update();

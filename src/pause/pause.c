@@ -14,12 +14,23 @@
 
 /// Font bitmap
 static BITMAP* bmpFont;
+/// Cursor bitmap
+static BITMAP* bmpCursor;
+
+/// Cursor position
+static bool cursorPos;
+/// Stick "released"
+static bool stickReleased;
 
 /// Initialize pause scene
 /// > Always 0
 static int pause_init()
 {
     bmpFont = get_bitmap("font");
+    bmpCursor = get_bitmap("cursor");
+
+    cursorPos = false;
+    stickReleased = true;
 
     return 0;
 }
@@ -28,18 +39,31 @@ static int pause_init()
 /// < tm Time multiplier
 static void pause_update(float tm)
 {
-    if(vpad_get_button(4) == PRESSED)
+    if(vpad_get_button(4) == PRESSED || vpad_get_button(1) == PRESSED)
     {
-        app_swap_scene("game");
+        if(!cursorPos)
+            app_swap_scene("game");
+        else
+            app_terminate();
     }
+
+    float stick = vpad_get_stick().y * (cursorPos ? -1 : 1);
+    if(stick > 0.25f )
+        cursorPos = !cursorPos;
 }
 
 /// Draw pause scene
 static void pause_draw()
 {
-    fill_rect(16,32,96,32,0);
+    fill_rect(16,22,96,52,0b00010101);
 
-    draw_text(bmpFont,(Uint8*)"GAME PAUSED",11,64,36,-1,0,true);
+    draw_text(bmpFont,(Uint8*)"GAME PAUSED",11,64,24,-1,0,true);
+    draw_text(bmpFont,(Uint8*)"Resume",6,64,40,-1,0,true);
+    draw_text(bmpFont,(Uint8*)"Quit",6,64,54,-1,0,true);
+
+    int p = cursorPos ? 55 : 41;
+    draw_bitmap(bmpCursor,26,p,0);
+
 }
 
 /// Get pause scene

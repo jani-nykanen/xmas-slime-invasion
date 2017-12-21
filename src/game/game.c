@@ -27,10 +27,14 @@
 
 /// Bitmap font
 static BITMAP* bmpFont;
+/// Bitmap font 2 (yellow)
+static BITMAP* bmpFont2;
 /// Power-up bitmap
 static BITMAP* bmpPowerUp;
 /// Game Over! logo
 static BITMAP* bmpGameOver;
+/// Cursor
+static BITMAP* bmpCursor;
 
 /// Kills
 static int kills;
@@ -79,6 +83,9 @@ static float shakeTimer;
 /// Shake amount
 static int shake;
 
+/// Is the game won
+static bool victory;
+
 /// Is the game over
 static bool gameOver;
 /// Game over timer
@@ -89,6 +96,8 @@ static FRAME* goFrame;
 static bool drawHud;
 /// Fade game over timer
 static float fadeGoTimer;
+/// Cursor pos in game over screen
+static bool cursorPos;
 
 /// Health change timer
 static float healthChange;
@@ -97,6 +106,8 @@ static float healthChange;
 static void game_recreate();
 
 /// Draw game over
+/// TODO: This should actually be an external scene,
+/// just like pause, but I was lazy
 static void draw_gameover()
 {
     draw_inverted_bitmap((BITMAP*)goFrame,0,0,0);
@@ -106,12 +117,18 @@ static void draw_gameover()
         int skip = (int)floor(goverTimer / 5.0f) +1;
         draw_skipped_bitmap_region((BITMAP*)goFrame,0,0,128,96,0,0,skip,skip,0);
 
-        skip = 5.0f - ((int)floor(goverTimer / 5.0f));
-        draw_skipped_bitmap_region((BITMAP*)bmpGameOver,0,0,128,16,0,24,skip,skip,0);
+        // skip = 5.0f - ((int)floor(goverTimer / 5.0f));
+        // draw_skipped_bitmap_region((BITMAP*)bmpGameOver,0,0,128,16,0,24,skip,skip,0);
     }
     else
     {   
         draw_bitmap(bmpGameOver,0,24,0);
+
+        draw_text(bmpFont2,(Uint8*)"Retry",5,64,64,-1,0,true);
+        draw_text(bmpFont2,(Uint8*)"Quit",5,64,78,-1,0,true);
+
+        int p = cursorPos ? 79 : 65;
+        draw_bitmap(bmpCursor,30,p,0);
     }
 }
 
@@ -121,13 +138,28 @@ static void update_gameover(float tm)
     if(goverTimer > 0.0f)
         goverTimer -= 1.0f * tm;
 
-    if(goverTimer <= 0.0f && any_pressed())
+    if(goverTimer <= 0.0f)
     {
-        gameOver = false;
-        copy_frame(app_get_canvas(),goFrame);
-        game_recreate();
-        fadeGoTimer = 30.0f;
+        float stick = vpad_get_stick().y * (cursorPos ? -1 : 1);
+        if(stick > 0.25f )
+            cursorPos = !cursorPos;
+
+        if(vpad_get_button(4) == PRESSED || vpad_get_button(1) == PRESSED)
+        {
+            if(!cursorPos)
+            {
+                gameOver = false;
+                copy_frame(app_get_canvas(),goFrame);
+                game_recreate();
+                fadeGoTimer = 30.0f;
+            }
+            else
+            {
+                app_terminate();
+            }
+        }
     }
+    
 }
 
 /// Draw power up timer & icon
@@ -345,6 +377,7 @@ static void game_recreate()
     doubleSlimeTimer = 0.0f;
     gameOver = false;
     drawHud = true;
+    victory = false;
     goverTimer = 0.0f;
 }
 
@@ -352,8 +385,10 @@ static void game_recreate()
 static int game_init()
 {
     bmpFont = get_bitmap("font");
+    bmpFont2 = get_bitmap("font2");
     bmpPowerUp = get_bitmap("powerup");
     bmpGameOver = get_bitmap("gameover");
+    bmpCursor = get_bitmap("cursor");
 
     goFrame = frame_create(128,96);
     if(goFrame == NULL) return 1;
@@ -388,7 +423,7 @@ static void game_update(float tm)
     int oldHealth = player.health;
 
     // Update stage
-    update_stage(tm);
+    update_stage(&player,tm);
     // Update bullets
     int i = 0;
     int i2 = 0;
@@ -434,29 +469,48 @@ static void game_update(float tm)
     // Update timers
     float speed = get_global_speed();
     bool victimCreated = false;
-    for(i=0; i < SLIME_TIMER_COUNT; i++)
+
+    if(!victory)
     {
-        slimeTimer[i] -= 1.0f * speed * tm;
-        if(slimeTimer[i] <= 0.0f)
+
+        for(i=0; i < SLIME_TIMER_COUNT; i++)
         {
-            int loop = doubleSlimeTimer >= 300 + 300*i ? 2 : 1;
-            for(i2=0; i2 < loop; i2 ++)
-                push_slime(i);
-
-            slimeTimer[i] = (float)(rand() % 120 + 60);
-
-            vicCount --;
-            if(!victimCreated && vicCount <= 0)
+            slimeTimer[i] -= 1.0f * speed * tm;
+            if(slimeTimer[i] <= 0.0f)
             {
-                push_victim();
-                victimCreated = true;
+                int loop = doubleSlimeTimer >= 300 + 300*i ? 2 : 1;
+                for(i2=0; i2 < loop; i2 ++)
+                    push_slime(i);
 
-                vicCount = rand() % 8 + 8;
+                slimeTimer[i] = (float)(rand() % 120 + 60);
+
+                vicCount --;
+                if(!victimCreated && vicCount <= 0)
+                {
+                    push_victim();
+                    victimCreated = true;
+
+                    vicCount = rand() % 8 + 8;
+                }
+
+                copterCount --;
+                if(copterCount <= 0)
+                    push_copter();
             }
-
-            copterCount --;
-            if(copterCount <= 0)
-                push_copter();
+        }
+        
+        if(percentage >= 1000)
+        {
+            victory = true;
+            for(i=0; i < SLIME_COUNT; i++)
+            {
+                if(slimes[i].dead) continue;
+                slimes[i].dead = true;
+                slimes[i].dying = true;
+            }
+            player.dead = false;
+            player.dying = false;
+            player.health = 3;
         }
     }
 
@@ -479,6 +533,11 @@ static void game_update(float tm)
         drawHud = true;
         goverTimer = 30.0f;
         gameOver = true;
+    }
+
+    if(get_key_state((int)SDL_SCANCODE_P) == PRESSED)
+    {
+        percentage = 1000;
     }
 }
 
@@ -539,7 +598,7 @@ void game_draw()
 
     set_translation(0,0);
     // Draw HUD
-    if(drawHud)
+    if(drawHud && !victory)
         draw_hud();
 
     // Draw fading game over screen
@@ -625,10 +684,10 @@ void shake_screen()
     shake = 4 + (int)floor(kills/3);
 }
 
-/// Is the player dead
-bool is_player_dead()
+/// Is the game won
+bool is_victory()
 {
-    return player.dead;
+    return percentage >= 1000;
 }
 
 /// Create some nasty blood

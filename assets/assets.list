@@ -1,6 +1,7 @@
 # A list of assets
 # Bitmaps
 bitmap font assets/bitmaps/font.png
+bitmap font2 assets/bitmaps/font2.png
 bitmap figure assets/bitmaps/figure.png
 bitmap forest assets/bitmaps/forest.png
 bitmap hills assets/bitmaps/hills.png
@@ -13,3 +14,6 @@ bitmap kaboom assets/bitmaps/kaboom.png
 bitmap victim assets/bitmaps/victim.png
 bitmap powerup assets/bitmaps/powerup.png
 bitmap gameover assets/bitmaps/gameover.png
+bitmap cursor assets/bitmaps/cursor.png
+bitmap house assets/bitmaps/house.png
+bitmap victory assets/bitmaps/victory.png

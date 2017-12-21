@@ -16,6 +16,10 @@ static BITMAP* bmpHills;
 static BITMAP* bmpForest;
 /// Floor
 static BITMAP* bmpFloor;
+/// House
+static BITMAP* bmpHouse;
+/// Victory
+static BITMAP* bmpVictory;
 
 /// Background pos
 static float bgPos;
@@ -25,6 +29,8 @@ static float globalSpeed;
 static int skyMode;
 /// Previous sky mode
 static int prevSkyMode;
+/// Ending sky changed
+static bool endingSkyChanged;
 /// Sky change limits
 static int skyChangeLimits[] = 
 {
@@ -32,6 +38,10 @@ static int skyChangeLimits[] =
 };
 /// Sky change timer
 static float skyChangeTimer;
+/// House position
+static float housePos;
+/// Victory pos
+static float victoryPos;
 
 /// Initialize stage
 void init_stage()
@@ -40,37 +50,89 @@ void init_stage()
     bmpHills = get_bitmap("hills");
     bmpForest = get_bitmap("forest");
     bmpFloor = get_bitmap("floor");
+    bmpHouse = get_bitmap("house");
+    bmpVictory = get_bitmap("victory");
 
     bgPos = 0.0f;
     globalSpeed = 1.0f;
     skyMode = 0;
     prevSkyMode = 0;
     skyChangeTimer = 0.0f;
+    housePos = 256.0f;
+    victoryPos = -32.0f;
+    endingSkyChanged = false;
 }
 
 /// Update stage
-void update_stage(float tm)
+void update_stage(PLAYER* pl, float tm)
 {
     prevSkyMode = skyMode;
     int i = 0;
-    skyMode = 0;
-    for(; i < 4; i++)
+    
+    if(!is_victory())
     {
-        if(get_kills() >= skyChangeLimits[i])
+        skyMode = 0;
+        for(; i < 4; i++)
         {
-            ++ skyMode;
+            if(get_kills() >= skyChangeLimits[i])
+            {
+                ++ skyMode;
+            }
+        }
+        if(skyMode != prevSkyMode)
+        {
+            skyChangeTimer = 60.0f;
         }
     }
-    if(skyMode != prevSkyMode)
+    else if(!endingSkyChanged)
     {
-        skyChangeTimer = 60.0f;
+        if(skyMode > 0)
+        {
+            skyChangeTimer = 60.0f;
+        }
+        endingSkyChanged = true;
     }
+    
     if(skyChangeTimer > 0.0f)
     {
         skyChangeTimer -= 1.0f * tm;
+        if(skyChangeTimer <= 0.0f && is_victory())
+        {
+            skyMode = 0;
+        }
     }
 
-    globalSpeed = is_player_dead() ? 0.0f : 1.0f + skyMode*0.2f;
+    if(!is_victory())
+        globalSpeed = pl->dead ? 0.0f : 1.0f + skyMode*0.2f;
+    else
+    {
+
+        if(housePos > 8)
+        {
+            if(globalSpeed > 0.5f)
+            {
+                globalSpeed -= 0.01f * tm;
+                if(globalSpeed < 0.5f)
+                {
+                    globalSpeed = 0.5f;
+                }
+            }
+
+            housePos -= globalSpeed * tm;
+        }
+        else
+        {
+            housePos = 8;
+            globalSpeed = 0.0f;
+
+            if(victoryPos < 0.0f)
+            {
+                victoryPos += 0.5f * tm;
+                if(victoryPos > 0.0f)
+                    victoryPos = 0.0f;
+            }
+        }
+    }
 
     bgPos += globalSpeed * tm;
     if(bgPos >= 512.0f)
@@ -87,9 +149,18 @@ void draw_stage()
         draw_bitmap_region(bmpSky,0,(bmpSky->h/5.0f)*skyMode,bmpSky->w,bmpSky->h/5,0,0,0);
     else
     {
-        draw_bitmap_region(bmpSky,0,(bmpSky->h/5.0f)*(skyMode-1),bmpSky->w,bmpSky->h/4,0,0,0);
-        int skip = 6 - (int)floor(skyChangeTimer/10.0f);
-        draw_skipped_bitmap_region(bmpSky,0,(bmpSky->h/5.0f)*(skyMode),bmpSky->w,bmpSky->h/5,0,0,skip,skip,0);
+        if(!is_victory())
+        {
+            draw_bitmap_region(bmpSky,0,(bmpSky->h/5.0f)*(skyMode-1),bmpSky->w,bmpSky->h/4,0,0,0);
+            int skip = 6 - (int)floor(skyChangeTimer/10.0f);
+            draw_skipped_bitmap_region(bmpSky,0,(bmpSky->h/5.0f)*(skyMode),bmpSky->w,bmpSky->h/5,0,0,skip,skip,0);
+        }
+        else
+        {
+            draw_bitmap_region(bmpSky,0,(bmpSky->h/5.0f)*(skyMode),bmpSky->w,bmpSky->h/4,0,0,0);
+            int skip = 6 - (int)floor(skyChangeTimer/10.0f);
+            draw_skipped_bitmap_region(bmpSky,0,0,bmpSky->w,bmpSky->h/5,0,0,skip,skip,0);
+        }
     }
 
     // Hills
@@ -111,6 +182,17 @@ void draw_stage()
     for(i=0; i < 9; i++)
     {
         draw_bitmap(bmpFloor,p + i*16,96-12,0);
+    }
+
+    // House
+    if(is_victory())
+    {
+        draw_bitmap(bmpHouse,(int)round(housePos),96-12 - 64,0);
+
+        if(housePos <= 8)
+        {
+            draw_bitmap(bmpVictory,0,victoryPos,0);
+        }
     }
 }
 

@@ -66,6 +66,7 @@ static void pl_control(PLAYER*pl)
 /// Animate
 static void pl_animate(PLAYER*pl, float tm)
 {
+
     if(pl->teleporting)
     {
         spr_animate(&pl->spr,6,0,8,!pl->released ? 5 : 3,tm);
@@ -80,6 +81,13 @@ static void pl_animate(PLAYER*pl, float tm)
             return;
         }
     }
+
+     if(is_victory() && get_global_speed() < 0.1f)
+     {
+         int frame = pl->speed.y < 0.0f ? 4 : 3;
+         spr_animate(&pl->spr,1,frame,frame,0,tm);
+         return;
+     }
 
     if(pl->shooting)
     {
@@ -232,6 +240,25 @@ void pl_draw_laser(PLAYER* pl)
     fill_rect(round(pl->pos.x) + (pl->spinning ? -1 : 1) + 8,round(pl->pos.y)-9 +1,128,1 , colors[ (index + 1) % 4 ] );
 }
 
+/// Victory behavior
+/// < pl Player
+/// < tm Time mul.
+void pl_victory(PLAYER* pl, float tm)
+{
+    pl->shooting = false;
+    pl->target.x = pl->pos.x > 32.0f ? -0.5f : 0.5f;
+
+    if(fabs(pl->pos.x-32) < 2.0f)
+    {
+        pl->target.x = 0.0f;
+    }
+
+    if(is_victory() && get_global_speed() < 0.1f && pl->canJump)
+    {
+        pl->speed.y = -1.0f;
+    }
+}
+
 /// Create a player object
 PLAYER create_player()
 {
@@ -273,7 +300,11 @@ void pl_update(PLAYER* pl, float tm)
 
     if(pl->startPosReached)
     {
-        pl_control(pl);
+        if(!is_victory())
+            pl_control(pl);
+        else
+            pl_victory(pl,tm);
+
         pl_move(pl,tm);
     }
     else

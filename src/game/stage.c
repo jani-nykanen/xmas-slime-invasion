@@ -87,6 +87,14 @@ void update_stage(PLAYER* pl, float tm)
         if(skyMode != prevSkyMode)
         {
             skyChangeTimer = 60.0f;
+            if(skyMode == 1)
+            {
+                swap_music(get_music("theme2"),0.50f);
+            }
+            else if(skyMode == 3)
+            {
+                swap_music(get_music("theme3"),0.50f);
+            }
         }
     }
     else if(!endingSkyChanged)

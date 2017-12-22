@@ -16,6 +16,8 @@ enum
 {
     T_BITMAP = 0,
     T_TILEMAP = 1,
+    T_MUSIC = 2,
+    T_SAMPLE = 3,
 };
 
 /// Asset type
@@ -56,13 +58,20 @@ static int load_from_list()
             if(strcmp(get_list_word(i).data,"bitmap") == 0)
             {
                 assType = T_BITMAP;
-                wordIndex = 2;
             }
             else if(strcmp(get_list_word(i).data,"tilemap") == 0)
             {
                 assType = T_TILEMAP;
-                wordIndex = 2;
             }
+            else if(strcmp(get_list_word(i).data,"music") == 0)
+            {
+                assType = T_MUSIC;
+            }
+            else if(strcmp(get_list_word(i).data,"sample") == 0)
+            {
+                assType = T_SAMPLE;
+            }
+            wordIndex = 2;
             
         }
         else
@@ -96,6 +105,28 @@ static int load_from_list()
                     case T_TILEMAP:
                     {
                         p = (void*)load_tilemap(path);
+                        if(p == NULL)
+                        {
+                            return 1;
+                        }
+                        success = true;
+                        break;
+                    }
+
+                    case T_MUSIC:
+                    {
+                        p = (void*)load_music(path);
+                        if(p == NULL)
+                        {
+                            return 1;
+                        }
+                        success = true;
+                        break;
+                    }
+
+                    case T_SAMPLE:
+                    {
+                        p = (void*)load_sample(path);
                         if(p == NULL)
                         {
                             return 1;
@@ -167,6 +198,36 @@ TILEMAP* get_tilemap(const char* name)
     return NULL;
 }
 
+/// Get music by name
+MUSIC* get_music(const char* name)
+{
+    int i = 0;
+    for(; i < assCount; i++)
+    {
+        if(assets[i].type == T_MUSIC && strcmp(assets[i].name,name) == 0)
+        {
+            return (MUSIC*)assets[i].data;
+        }
+    }
+
+    return NULL;
+}
+
+/// Get sample by name
+SAMPLE* get_sample(const char* name)
+{
+    int i = 0;
+    for(; i < assCount; i++)
+    {
+        if(assets[i].type == T_SAMPLE && strcmp(assets[i].name,name) == 0)
+        {
+            return (SAMPLE*)assets[i].data;
+        }
+    }
+
+    return NULL;
+}
+
 /// Destroy loaded asset files
 void destroy_assets()
 {
@@ -183,6 +244,16 @@ void destroy_assets()
         {
             TILEMAP* t = (TILEMAP*)assets[i].data;
             destroy_tilemap(t);
+        }
+        else if(t == T_MUSIC)
+        {
+            MUSIC* m = (MUSIC*)assets[i].data;
+            destroy_music(m);
+        }
+        else if(t == T_SAMPLE)
+        {
+            SAMPLE* s = (SAMPLE*)assets[i].data;
+            destroy_sample(s);
         }
     }
 }

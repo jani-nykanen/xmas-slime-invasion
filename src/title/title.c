@@ -41,6 +41,11 @@ static float titleTimer;
 /// Cursor pos
 static int cursorPos;
 
+/// Music started
+static bool musicStarted;
+/// Audio enabled
+static bool audio;
+
 /// Swap scene event
 static void title_on_swap()
 {
@@ -48,6 +53,15 @@ static void title_on_swap()
     floatTimer = 0.0f;
     titleTimer = 0.0f;
     cursorPos = 0;
+    
+    
+    if(!musicStarted)
+    {
+        play_music(get_music("theme1"),0.50f);
+        set_music_length(30745);
+        musicStarted = true;
+        audio = true;
+    }
 }
 
 /// Initialize title scene
@@ -66,7 +80,7 @@ static int title_init()
     bmpCursor = get_bitmap("cursor");
     bmpHouse = get_bitmap("house");
 
-    title_on_swap();
+    musicStarted = false;
 
     return 0;
 } 
@@ -110,7 +124,13 @@ static void title_update(float tm)
             case 0:
                 titlePhase ++;
                 floatTimer = 0.0f;
-            break;
+                break;
+
+            case 1:
+                audio = !audio;
+                enable_samples(audio);
+                enable_music(audio);
+                break;
 
             case 2:
                 app_terminate();
@@ -198,7 +218,7 @@ static void title_draw()
         y = (int)(96 - 40*t);
 
         draw_text(bmpFont,(Uint8*)"Play",13,40,y,-1,0,false);
-        draw_text(bmpFont,(Uint8*)"Audio: On",13,40,y+14,-1,0,false);
+        draw_text(bmpFont,audio ? (Uint8*)"Audio: On" : (Uint8*)"Audio: Off",13,40,y+14,-1,0,false);
         draw_text(bmpFont,(Uint8*)"Quit",13,40,y+28,-1,0,false);
 
         draw_bitmap(bmpCursor,26,y + cursorPos*14,0);

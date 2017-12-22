@@ -7,6 +7,7 @@
 #include "bitmap.h"
 #include "tmxc.h"
 #include "music.h"
+#include "sample.h"
 
 /// Load assets from an asset list file
 /// < path List path
@@ -22,6 +23,16 @@ BITMAP* get_bitmap(const char* name);
 /// < name Tilemap name
 /// > A tilemap, NULL if not exist
 TILEMAP* get_tilemap(const char* name);
+
+/// Get music by name
+/// < name Music name
+/// > Music, NULL if does not exist
+MUSIC* get_music(const char* name);
+
+/// Get sample by name
+/// < name Sample name
+/// > Sample, NULL if does not exist
+SAMPLE* get_sample(const char* name);
 
 /// Destroy loaded asset files
 void destroy_assets();

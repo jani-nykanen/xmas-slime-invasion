@@ -173,6 +173,7 @@ static int app_init_SDL()
     {
         return 1;
     }
+    init_samples();
 
     return 0;
 }
@@ -388,6 +389,7 @@ static void app_update(Uint32 delta)
     }
 
     ctr_update();
+    update_music(tm);
 
 }
 

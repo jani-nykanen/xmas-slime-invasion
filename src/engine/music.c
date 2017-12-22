@@ -16,14 +16,17 @@ static float globalMusicVol;
 /// Loop length
 static int loopLength;
 
-/// Start time
-static long startTime;
+/// Last time
+static unsigned int lastTime;
 
 /// Is music playing
 static bool playing;
 
+/// Music enabled
+static bool musicEnabled;
+
 /// Position in ms
-static int posMs;
+static unsigned int posMs;
 
 /// Init music
 int init_music()
@@ -31,8 +34,9 @@ int init_music()
     globalMusicVol = 1.0f;
     playing = false;
     loopLength = 0;
-    startTime = 0;
+    lastTime = 0;
     posMs = 0;
+    musicEnabled = true;
 
     // Init formats
     int flags = MIX_INIT_OGG;
@@ -78,27 +82,40 @@ MUSIC* load_music(const char* path)
 /// Play music
 void play_music(MUSIC* mus, float vol)
 {
+    if(!musicEnabled) return;
+
     int v = (int)(128 * vol * globalMusicVol);
     if(v > 128) v = 128;
     if(v < 0) v = 0;
 
     Mix_HaltMusic();
     Mix_VolumeMusic(v);
-    Mix_PlayMusic(mus->data, -1);
+    Mix_FadeInMusic(mus->data, -1,1000);
 
-    startTime = (long)time(NULL);
+    lastTime = (unsigned int)SDL_GetTicks();
     posMs = 0;
+
+    playing = true;
 }
 
 /// Update music
 void update_music(float tm)
 {   
-    long t = (long)time(NULL);
-    if(t - startTime > loopLength)
+    if(!musicEnabled) return;
+
+    if(!playing) return;
+
+    unsigned int t = SDL_GetTicks();
+    if( t - lastTime  > 0)
     {
-        posMs -= loopLength;
-        startTime = t;
+        posMs += t - lastTime;
+        if(posMs > loopLength)
+        {
+            posMs -= loopLength;
+        }
     }
+
+    lastTime = t;
 }
 
 /// Set approximated music length in milliseconds
@@ -110,6 +127,48 @@ void set_music_length(int ms)
 /// Swap music but keep the position
 void swap_music(MUSIC* m, float vol)
 {
-    play_music(m,vol);
-    Mix_SetMusicPosition( (double)posMs / 1000.0f );
+    if(!musicEnabled) return;
+
+    int v = (int)(128 * vol * globalMusicVol);
+    if(v > 128) v = 128;
+    if(v < 0) v = 0;
+
+    Mix_HaltMusic();
+    Mix_VolumeMusic(v);
+    Mix_PlayMusic(m->data, -1);
+    Mix_SetMusicPosition( ((double)posMs) / 1000.0 );
 }   
+
+/// Destroy music
+void destroy_music(MUSIC* m)
+{
+    if(m == NULL) return;
+
+    Mix_FreeMusic(m->data);
+    free(m);
+}
+
+/// Stop music
+void stop_music()
+{
+    if(!musicEnabled) return;
+
+    Mix_FadeOutMusic(1000);
+}
+
+/// Enable music
+void enable_music(bool state)
+{
+    if(!state)
+    {
+        Mix_PauseMusic();
+        globalMusicVol = 0.0f;
+    }
+    else
+    {
+        Mix_ResumeMusic();
+        globalMusicVol = 1.0f;
+    }
+    musicEnabled = state;
+    
+}

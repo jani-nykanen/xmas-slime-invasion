@@ -500,6 +500,7 @@ static void game_update(float tm)
         if(percentage >= 1000)
         {
             victory = true;
+            swap_music(get_music("theme1"),0.5f);
             for(i=0; i < SLIME_COUNT; i++)
             {
                 if(slimes[i].dead) continue;
@@ -531,6 +532,7 @@ static void game_update(float tm)
         drawHud = true;
         goverTimer = 30.0f;
         gameOver = true;
+        play_music(get_music("theme1"),0.50f);
     }
 
     if(get_key_state((int)SDL_SCANCODE_P) == PRESSED)

@@ -6,6 +6,8 @@
 
 #include "SDL2/SDL_mixer.h"
 
+#include "stdbool.h"
+
 /// Music
 typedef struct
 {
@@ -37,5 +39,16 @@ void set_music_length(int ms);
 /// < m Music
 /// < vol Volume
 void swap_music(MUSIC* m, float vol);
+
+/// Destroy music
+/// < m Music
+void destroy_music(MUSIC* m);
+
+/// Stop music
+void stop_music();
+
+/// Set global music volume
+/// < state State
+void enable_music(bool state);
 
 #endif // __MUSIC__

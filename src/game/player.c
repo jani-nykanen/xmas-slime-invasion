@@ -331,6 +331,8 @@ void pl_update(PLAYER* pl, float tm)
         pl->spr.frame = 0;
         pl->spr.row = 7;
         pl->spr.count = 0.0f;
+
+        stop_music();
     }
 }
 

@@ -7,6 +7,8 @@
 #include "../engine/graphics.h"
 #include "../engine/assets.h"
 
+#include "../vpad.h"
+
 #include "stdio.h"
 #include "stdlib.h"
 #include "math.h"
@@ -33,7 +35,7 @@ static int intro_init()
 static void intro_update(float tm)
 {
     introTimer += 1.0f * tm;
-    if(introTimer >= 255.0f)
+    if(introTimer >= 255.0f || vpad_get_button(4) == PRESSED)
     {
         app_swap_scene("title");
     }

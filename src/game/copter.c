@@ -12,6 +12,9 @@
 /// Copter bitmap
 static BITMAP* bmpCopter =NULL;
 
+/// Power up sample
+static SAMPLE* smpPowerup;
+
 /// Copter dying
 /// < c Copter
 /// < pl Player
@@ -31,7 +34,11 @@ static void copter_die(COPTER* c, PLAYER* pl)
 /// Create a new copter instance
 COPTER create_copter()
 {
-    if(bmpCopter == NULL) bmpCopter = get_bitmap("powerup");
+    if(bmpCopter == NULL)
+    {
+        bmpCopter = get_bitmap("powerup");
+        smpPowerup = get_sample("powerup");
+    }
 
     COPTER c;
     c.dead = true;
@@ -105,6 +112,7 @@ void copter_collision(COPTER* c, PLAYER* pl, BULLET* bullets, int bulletLength)
             c->spr.row = 2;
 
             copter_die(c,pl);
+            play_sample(smpPowerup,0.65f);
         }
     }
 }

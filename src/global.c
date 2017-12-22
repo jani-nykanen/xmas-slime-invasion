@@ -9,6 +9,7 @@
 #include "vpad.h"
 #include "engine/frame.h"
 #include "engine/graphics.h"
+#include "engine/assets.h"
 
 #include "stdlib.h"
 #include "math.h"
@@ -26,6 +27,8 @@ static int global_init()
     vpad_add_button(2,(int)SDL_SCANCODE_C,3);
     vpad_add_button(3,(int)SDL_SCANCODE_SPACE,1);
     vpad_add_button(4,(int)SDL_SCANCODE_RETURN,7);
+
+    set_global_sample_volume(0.6f);
 
     return 0;
 }

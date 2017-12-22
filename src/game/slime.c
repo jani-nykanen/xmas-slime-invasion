@@ -18,11 +18,22 @@ static BITMAP* bmpSlime = NULL;
 /// Kaboom bitap
 static BITMAP* bmpKaboom = NULL;
 
+/// Explosion sample
+static SAMPLE* smpExp;
+/// Hit sample
+static SAMPLE* smpHit;
+/// Death sample
+static SAMPLE* smpKill;
+/// Jump sample
+static SAMPLE* smpJump;
+
 /// Die
 /// < s Slime
 static void slime_die(SLIME* s)
 {
     if(s->dead) return;
+
+    play_sample(s->id < 8 ? smpKill : smpExp,s->id < 8 ?  0.60f : 0.45f);
 
     s->dead = true;
     s->dying = true;
@@ -89,6 +100,8 @@ static bool jump_routine(SLIME* s, float tm)
         s->spcTimer -= 1.0f * tm;
         if(s->spcTimer <= 0.0f)
         {
+            play_sample(smpJump,0.40f);
+
             float height = (float)(rand() % 100)/100.0f * 1.5f + 1.5f;
              s->speed.y = -height;
              s->spcTimer = s->id != 4 ? (float)(rand() % 30 + 15 + 10 * s->id) : 0;
@@ -111,8 +124,16 @@ static void fly_routine(SLIME* s, float tm)
 /// Create a new slime instance
 SLIME create_slime()
 {
-    if(bmpSlime == NULL) bmpSlime = get_bitmap("slimes");
-    if(bmpKaboom == NULL) bmpKaboom = get_bitmap("kaboom");
+    if(bmpSlime == NULL)
+    {
+        bmpSlime = get_bitmap("slimes");
+        bmpKaboom = get_bitmap("kaboom");
+
+        smpExp = get_sample("explosion");
+        smpKill = get_sample("kill");
+        smpHit = get_sample("hit");
+        smpJump = get_sample("jump2");
+    }
 
     SLIME s;
     s.dead = true;
@@ -369,11 +390,16 @@ void slime_collision(SLIME* s, PLAYER* pl, BULLET* bullets, int bulletLength)
             s->hurtTimer = 30.0f;
             s->health -= b.id*2 + 1;
             s->speed.x = 1.0f;
+            
             if(s->health <= 0)
             {
                 slime_die(s);
 
                 add_percentage(b.id == 0 ? 15 : 10);
+            }
+            else
+            {
+                play_sample(smpHit,0.55f);
             }
         }
     }

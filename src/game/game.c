@@ -36,6 +36,9 @@ static BITMAP* bmpGameOver;
 /// Cursor
 static BITMAP* bmpCursor;
 
+/// Warning sample
+static SAMPLE* smpWarning;
+
 /// Kills
 static int kills;
 /// Percentage
@@ -387,6 +390,8 @@ static int game_init()
     bmpGameOver = get_bitmap("gameover");
     bmpCursor = get_bitmap("cursor");
 
+    smpWarning = get_sample("warning");
+
     goFrame = frame_create(128,96);
     if(goFrame == NULL) return 1;
 
@@ -485,6 +490,9 @@ static void game_update(float tm)
                 vicCount --;
                 if(!victimCreated && vicCount <= 0)
                 {
+                    stop_all_samples();
+                    play_sample(smpWarning,0.70f);
+
                     push_victim();
                     victimCreated = true;
 

@@ -12,11 +12,16 @@
 /// Victim bitmap
 static BITMAP* bmpVictim =NULL;
 
+/// Fail sample
+static SAMPLE* smpFail;
+
 /// Die
 /// < v Victim
 static void victim_die(VICTIM* v)
 {
     if(v->dead) return;
+
+    play_sample(smpFail,0.65f);
 
     v->dead = true;
     v->dying = true;
@@ -32,7 +37,11 @@ static void victim_die(VICTIM* v)
 /// Create a new victim instance
 VICTIM create_victim()
 {
-    if(bmpVictim == NULL) bmpVictim = get_bitmap("victim");
+    if(bmpVictim == NULL)
+    {
+        bmpVictim = get_bitmap("victim");
+        smpFail = get_sample("fail");
+    }
 
     VICTIM v;
     v.dead = true;

@@ -18,13 +18,13 @@ void init_samples()
 {
     // Set default values
     globalSoundVol = 1.0f;
+    samplesEnabled = true;
 }
 
 /// Set global volume
 void set_global_sample_volume(float vol)
 {
     globalSoundVol = vol;
-    samplesEnabled = true;
 }
 
 /// Load a sound

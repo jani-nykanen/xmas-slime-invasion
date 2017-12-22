@@ -16,6 +16,21 @@
 /// Player bitmap
 static BITMAP* bmpPlayer = NULL;
 
+/// Jump sample
+static SAMPLE* smpJump;
+/// Shoot sample
+static SAMPLE* smpShoot;
+/// Crystal sample
+static SAMPLE* smpCrystal;
+/// Evade sample
+static SAMPLE* smpEvade;
+/// Laser sample
+static SAMPLE* smpLaser;
+/// Hurt sample
+static SAMPLE* smpHurt;
+/// Die sample
+static SAMPLE* smpDie;
+
 /// Control
 static void pl_control(PLAYER*pl)
 {
@@ -30,6 +45,7 @@ static void pl_control(PLAYER*pl)
         pl->spr.row = 6;
         pl->released = false;
         pl->speed.x = pl->target.x;
+        play_sample(smpEvade,0.50f);
     }
 
     if(pl->teleporting)
@@ -47,11 +63,15 @@ static void pl_control(PLAYER*pl)
             pl->speed.y = -2.45f;
             pl->doubleJump = true;
             pl->canJump = false;
+            
+            play_sample(smpJump,0.65f);
         }
         else if(pl->doubleJump)
         {
             pl->speed.y = -1.95f;
             pl->doubleJump = false;
+
+            play_sample(smpJump,0.5f);
         }
     }
 
@@ -109,13 +129,28 @@ static void pl_animate(PLAYER*pl, float tm)
             int loop = (pl->powerUpId == 0 && pl->powerUpTimer > 0.0f) ? 2: 1;
             int deltaY = loop == 1 ? 0 : -2;
             if(!mode && pl->powerUpId == 1 && pl->powerUpTimer > 0.0f)
+            {
                  loop = 0;
+                 play_sample(smpLaser,0.50f);
+            }
 
             int i = 0;
             for(; i < loop; ++ i)
             {
                 BULLET* b = get_next_bullet();
                 put_bullet(b,vec2(pl->pos.x + (pl->spinning ? -1 : 1) +7,pl->pos.y-16 +8 + deltaY + i * 4),speed,type);
+            }
+
+            if(loop != 0)
+            {
+                if(!mode)
+                {
+                    play_sample(smpShoot,0.35f);
+                }
+                else
+                {
+                    play_sample(smpCrystal,0.40f);
+                }   
             }
         }
     }
@@ -218,6 +253,7 @@ static void pl_die(PLAYER* pl, float tm)
     if(oldFrame == 0 && pl->spr.frame > 0)
     {
         create_blood_effect(vec2(pl->pos.x,pl->pos.y-8),64,0b00010000);
+        play_sample(smpDie,0.50f);
     }
 
     if(pl->spr.frame == 8)
@@ -263,7 +299,16 @@ void pl_victory(PLAYER* pl, float tm)
 PLAYER create_player()
 {
     if(bmpPlayer == NULL)
+    {
         bmpPlayer = get_bitmap("figure");
+        smpJump = get_sample("jump1");
+        smpShoot = get_sample("shoot");
+        smpCrystal = get_sample("crystal");
+        smpEvade = get_sample("evade");
+        smpLaser = get_sample("laser");
+        smpHurt = get_sample("hurt");
+        smpDie = get_sample("die");
+    }
 
     PLAYER pl;
     pl.pos = vec2(-8.0f,96-12);
@@ -366,12 +411,14 @@ void pl_draw(PLAYER* pl)
 /// Make him/her suffer
 void pl_hurt(PLAYER* pl, VEC2 p, VEC2 d)
 {
-    if(pl->hurtTimer > 0.0f || pl->teleporting) return;
+    if(pl->dead || pl->hurtTimer > 0.0f || pl->teleporting) return;
 
     if(pl->pos.x+4 > p.x && pl->pos.x-4 < p.x+d.x
         && pl->pos.y-2 > p.y && pl->pos.y-12 < p.y+d.y)
     {
         pl->hurtTimer = 60.0f;
         pl->health --;
+
+        play_sample(smpHurt,0.55f);
     }
 }

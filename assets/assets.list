@@ -23,3 +23,19 @@ bitmap creator assets/bitmaps/creator.png
 music theme1 assets/audio/theme_1.ogg
 music theme2 assets/audio/theme_2.ogg
 music theme3 assets/audio/theme_3.ogg
+# Samples
+sample jump1 assets/audio/jump1.wav
+sample jump2 assets/audio/jump2.wav
+sample shoot assets/audio/shoot.wav
+sample crystal assets/audio/crystal.wav
+sample hurt assets/audio/hurt.wav
+sample laser assets/audio/laser.wav
+sample evade assets/audio/evade.wav
+sample hit assets/audio/hit.wav
+sample kill assets/audio/kill.wav
+sample explosion assets/audio/explosion.wav
+sample collect assets/audio/collect.wav
+sample die assets/audio/die.wav
+sample powerup assets/audio/powerup.wav
+sample fail assets/audio/fail.wav
+sample warning assets/audio/warning.wav

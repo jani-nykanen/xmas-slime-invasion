@@ -10,11 +10,17 @@
 
 /// Crystal bitmap
 static BITMAP* bmpCrystal =NULL;
+/// Collect sample
+static SAMPLE* smpCollect;
 
 /// Create a new crystal instance
 CRYSTAL create_crystal()
 {
-    if(bmpCrystal == NULL) bmpCrystal = get_bitmap("crystal");
+    if(bmpCrystal == NULL)
+    {
+        bmpCrystal = get_bitmap("crystal");
+        smpCollect = get_sample("collect");
+    }
 
     CRYSTAL c;
     c.exist = false;
@@ -97,6 +103,7 @@ void crystal_update(CRYSTAL* c, PLAYER* pl, float tm)
         if(pl->crystals < 99)
             pl->crystals ++;
         
+        play_sample(smpCollect,0.60f);
     }
 }
 

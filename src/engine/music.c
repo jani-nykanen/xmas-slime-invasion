@@ -48,7 +48,7 @@ int init_music()
     }
 
     // Open audio
-    if(Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 1024)==-1) 
+    if(Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 512)==-1) 
     {
         SDL_ShowSimpleMessageBox( SDL_MESSAGEBOX_ERROR,"Error!","Failed to open audio!\n",NULL);
         return 1;

@@ -27,6 +27,8 @@ static BITMAP* bmpLogo;
 static BITMAP* bmpFont;
 /// Cursor bitmap
 static BITMAP* bmpCursor;
+/// House bitmap
+static BITMAP* bmpHouse;
 
 /// Is the frame drawn
 static bool frameDrawn;
@@ -62,6 +64,7 @@ static int title_init()
     bmpLogo = get_bitmap("logo");
     bmpFont = get_bitmap("font2");
     bmpCursor = get_bitmap("cursor");
+    bmpHouse = get_bitmap("house");
 
     title_on_swap();
 
@@ -163,6 +166,16 @@ static void title_draw()
 
     draw_inverted_bitmap((BITMAP*)frameBg,0,0,0);
 
+    if(titlePhase < 3)
+    {
+        draw_bitmap(bmpHouse,86,96-12-64,0);
+    }
+    else
+    {
+        int skip = (int)floor( (titleTimer) / 10.0f) + 1;
+        draw_skipped_bitmap_region(bmpHouse,0,0,64,64, 86,96-12-64,skip,skip,0);
+    }
+
     float scale = 1.0f + sin(floatTimer*1.5f)*0.05f;
     int y = 2 + (int)(4*sin(floatTimer));
     if(titlePhase == 0 || titlePhase == 3)
@@ -196,6 +209,7 @@ static void title_draw()
         int skip = (int)floor( (titleTimer-30.0f) / 5.0f);
         fill_skipped_rect(0,0,128,96,skip,skip,0);
     }
+
 }
 
 /// Get title scene

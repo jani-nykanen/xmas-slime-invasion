@@ -3,7 +3,7 @@ OBJDIR := "./obj"
 
 SRCS := $(shell find $(SRCDIR) -name "*.c")
 OBJ_FILES := $(SRCS:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
-LD_FLAGS := -lSDL2 -lSDL2_image -lm
+LD_FLAGS := -lSDL2 -lSDL2_image -lSDL2_mixer -lm
 CC_FLAGS := -Wall # -O3
 
 #game.exe: $(OBJ_FILES)

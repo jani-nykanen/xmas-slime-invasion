@@ -126,7 +126,7 @@ static void app_calc_canvas_prop(int winWidth, int winHeight)
 static int app_init_SDL()
 {   
     // Init
-    if(SDL_Init(SDL_INIT_EVENTS | SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) != 0)
+    if(SDL_Init(SDL_INIT_EVENTS | SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_AUDIO) != 0)
     {
         SDL_ShowSimpleMessageBox( SDL_MESSAGEBOX_ERROR,"Error!","Failed to init SDL!\n",NULL);
         return 1;
@@ -166,6 +166,12 @@ static int app_init_SDL()
     if(joy == NULL)
     {
         printf("No joystick detected\n");
+    }
+
+    // Init audio
+    if(init_music() == 1)
+    {
+        return 1;
     }
 
     return 0;

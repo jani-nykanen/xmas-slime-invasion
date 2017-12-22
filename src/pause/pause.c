@@ -68,11 +68,17 @@ static void pause_draw()
 
 }
 
+/// Scene swapped
+static void pause_on_swap()
+{
+    cursorPos = 0;
+}
+
 /// Get pause scene
 /// > Pause scene
 SCENE get_pause_scene()
 {
-    SCENE s = (SCENE) {pause_init,pause_update,pause_draw, NULL};
+    SCENE s = (SCENE) {pause_init,pause_update,pause_draw, NULL, pause_on_swap};
     set_scene_name(&s,"pause");
 
     return s;

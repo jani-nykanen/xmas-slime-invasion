@@ -6,6 +6,7 @@
 
 #include "bitmap.h"
 #include "tmxc.h"
+#include "music.h"
 
 /// Load assets from an asset list file
 /// < path List path

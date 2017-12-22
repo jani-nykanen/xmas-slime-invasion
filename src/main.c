@@ -7,6 +7,7 @@
 #include "game/game.h"
 #include "pause/pause.h"
 #include "title/title.h"
+#include "intro/intro.h"
 
 #include "engine/app.h"
 #include "engine/list.h"
@@ -87,12 +88,13 @@ int main(int argc, char** argv)
 {
     // Set scenes
     SCENE scenes[] = {
+        get_intro_scene(),  
         get_title_scene(),  
         get_game_scene(),
         get_pause_scene(),
         get_global_scene(),  
     };
-    int sceneCount = 4;
+    int sceneCount = 5;
 
     // Load config
     if(read_config("config.list") != 0)

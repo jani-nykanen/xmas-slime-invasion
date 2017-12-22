@@ -18,3 +18,8 @@ bitmap cursor assets/bitmaps/cursor.png
 bitmap house assets/bitmaps/house.png
 bitmap victory assets/bitmaps/victory.png
 bitmap logo assets/bitmaps/logo.png
+bitmap creator assets/bitmaps/creator.png
+# Music
+music theme1 assets/audio/theme_1.ogg
+music theme2 assets/audio/theme_2.ogg
+music theme3 assets/audio/theme_3.ogg

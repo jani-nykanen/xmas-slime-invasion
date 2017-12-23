@@ -61,7 +61,7 @@ void put_victim(VICTIM* v, VEC2 pos, int id)
     v->dead = false;
     v->dying = false;
     v->jumpTimer = (float)(rand() % 120 + 30);
-    v->speed.y = -2.5f - (float)(rand() % 100)/100.0f;
+    v->speed.y = 0.0f;
 }
 
 /// Update a victim

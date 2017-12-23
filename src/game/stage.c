@@ -119,13 +119,6 @@ void update_stage(PLAYER* pl, float tm)
         globalSpeed = pl->dead ? 0.0f : 1.0f + skyMode*0.2f;
     else
     {
-        if(get_key_state((int)SDL_SCANCODE_L) == PRESSED)
-            {
-                victoryPos = 0.0f;
-                housePos = 8;
-                globalSpeed = 0.0f;
-            }
-
         if(housePos > 8)
         {
             if(globalSpeed > 0.5f)

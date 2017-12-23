@@ -19,6 +19,8 @@ bitmap house assets/bitmaps/house.png
 bitmap victory assets/bitmaps/victory.png
 bitmap logo assets/bitmaps/logo.png
 bitmap creator assets/bitmaps/creator.png
+bitmap warning assets/bitmaps/warning.png
+bitmap controls assets/bitmaps/controls.png
 # Music
 music theme1 assets/audio/theme_1.ogg
 music theme2 assets/audio/theme_2.ogg
@@ -39,3 +41,6 @@ sample die assets/audio/die.wav
 sample powerup assets/audio/powerup.wav
 sample fail assets/audio/fail.wav
 sample warning assets/audio/warning.wav
+sample choose assets/audio/choose.wav
+sample select assets/audio/select.wav
+sample start assets/audio/start.wav

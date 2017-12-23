@@ -27,6 +27,7 @@ static int global_init()
     vpad_add_button(2,(int)SDL_SCANCODE_C,3);
     vpad_add_button(3,(int)SDL_SCANCODE_SPACE,1);
     vpad_add_button(4,(int)SDL_SCANCODE_RETURN,7);
+    vpad_add_button(5,(int)SDL_SCANCODE_ESCAPE,6);
 
     set_global_sample_volume(0.6f);
 

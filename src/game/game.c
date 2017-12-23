@@ -33,11 +33,21 @@ static BITMAP* bmpFont2;
 static BITMAP* bmpPowerUp;
 /// Game Over! logo
 static BITMAP* bmpGameOver;
-/// Cursor
+/// Cursor bitmap
 static BITMAP* bmpCursor;
+/// Warning bitmap
+static BITMAP* bmpWarning;
+/// Controls bitmap
+static BITMAP* bmpControls;
 
 /// Warning sample
 static SAMPLE* smpWarning;
+/// Choose sample
+static SAMPLE* smpChoose;
+/// Select sample
+static SAMPLE* smpSelect;
+/// Start sample
+static SAMPLE* smpStart;
 
 /// Kills
 static int kills;
@@ -104,6 +114,29 @@ static bool cursorPos;
 
 /// Health change timer
 static float healthChange;
+/// Warning timer
+static float warnTimer;
+
+/// Controls shown 
+static bool controlsShown;
+/// Controls screen timer
+static float contrTimer;
+/// Controls screen enabled
+static bool ctrScreen;
+/// Controls screen mode
+static int ctrMode;
+
+/// Draw controls
+static void draw_controls()
+{
+    float pos;
+    if(ctrMode != 1)
+        pos = -96 + 96/60.0f * (ctrMode == 2 ? (60.0f-contrTimer) : contrTimer);
+    else
+        pos = 0;
+
+    draw_bitmap(bmpControls,0,pos,0);
+}
 
 /// Draw game over
 /// TODO: This should actually be an external scene,
@@ -142,10 +175,14 @@ static void update_gameover(float tm)
     {
         float stick = vpad_get_stick().y * (cursorPos ? -1 : 1);
         if(stick > 0.25f )
+        {
             cursorPos = !cursorPos;
+            play_sample(smpSelect,0.70f);
+        }
 
         if(vpad_get_button(4) == PRESSED || vpad_get_button(1) == PRESSED)
         {
+            play_sample(smpChoose,0.70f);
             if(!cursorPos)
             {
                 gameOver = false;
@@ -157,6 +194,12 @@ static void update_gameover(float tm)
             {
                 app_swap_scene("title");
             }
+        }
+
+        if(vpad_get_button(5) == PRESSED)
+        {
+            play_sample(smpChoose,0.70f);
+            app_swap_scene("title");
         }
     }
     
@@ -240,6 +283,12 @@ static void draw_hud()
     // Power up
     if(player.powerUpTimer > 0.0f) 
         draw_powerup();
+
+    // Warning
+    if(warnTimer > 0.0f && (warnTimer < 45.0f || (int)floor(warnTimer/4) % 2 == 0) )
+    {
+        draw_bitmap(bmpWarning,128-24,96-36,0);
+    }
 }
 
 /// Push slime to the screen
@@ -314,7 +363,8 @@ static void push_victim()
         }
     }
 
-    put_victim(v,vec2(144 - (rand() % 16),96+16),rand() % 2);
+    int id = rand() % 2;
+    put_victim(v,vec2(id == 0 ? 288 : 208,96-12),id);
 }
 
 /// Push copter to the screen
@@ -379,6 +429,7 @@ void game_recreate()
     drawHud = true;
     victory = false;
     goverTimer = 0.0f;
+    warnTimer = 0.0f;
 }
 
 /// Init game
@@ -389,8 +440,17 @@ static int game_init()
     bmpPowerUp = get_bitmap("powerup");
     bmpGameOver = get_bitmap("gameover");
     bmpCursor = get_bitmap("cursor");
+    bmpWarning = get_bitmap("warning");
+    bmpControls = get_bitmap("controls");
 
     smpWarning = get_sample("warning");
+    smpChoose = get_sample("choose");
+    smpSelect = get_sample("select");
+    smpStart = get_sample("start");
+
+    controlsShown = false;
+    contrTimer = 0.0f;
+    ctrScreen = false;
 
     goFrame = frame_create(128,96);
     if(goFrame == NULL) return 1;
@@ -407,6 +467,30 @@ static int game_init()
 /// tm Time multiplier
 static void game_update(float tm)
 {
+    if(ctrScreen)
+    {
+        if(ctrMode == 0 || ctrMode == 2)
+        {
+            contrTimer += 2.0f * tm;
+            if(contrTimer >= 60.0f)
+            {
+                contrTimer = 0.0f;
+                if(ctrMode == 0)
+                    ctrMode = 1;
+                else
+                    ctrScreen = false;
+            }
+        }
+
+        if(ctrMode == 1 && any_pressed())
+        {
+            ctrMode = 2;
+            play_sample(smpChoose,0.70f);
+        }
+            
+        return;
+    }
+
     if(gameOver)
     {
         update_gameover(tm);
@@ -415,10 +499,23 @@ static void game_update(float tm)
     else if(fadeGoTimer > 0.0f)
     {
         fadeGoTimer -= 1.0f * tm;
+        if(fadeGoTimer <= 0.0f && !controlsShown)
+        {
+            ctrScreen = true;
+            controlsShown = true;
+            contrTimer = 0.0f;
+            return;
+        }
     }
 
-    if(!player.dead && !victory && vpad_get_button(4) == PRESSED)
+    if(warnTimer > 0.0f)
     {
+        warnTimer -= 1.0f * tm;
+    }
+
+    if(!player.dead && !victory && (vpad_get_button(4) == PRESSED || vpad_get_button(5) == PRESSED) )
+    {
+        play_sample(smpStart,0.70f);
         app_swap_scene("pause");
         return;
     }
@@ -490,8 +587,8 @@ static void game_update(float tm)
                 vicCount --;
                 if(!victimCreated && vicCount <= 0)
                 {
-                    stop_all_samples();
                     play_sample(smpWarning,0.70f);
+                    warnTimer = 90.0f;
 
                     push_victim();
                     victimCreated = true;
@@ -541,11 +638,6 @@ static void game_update(float tm)
         goverTimer = 30.0f;
         gameOver = true;
         play_music(get_music("theme1"),0.50f);
-    }
-
-    if(get_key_state((int)SDL_SCANCODE_P) == PRESSED)
-    {
-        percentage = 1000;
     }
 }
 
@@ -616,6 +708,12 @@ void game_draw()
     {
         int skip = (int)floor(fadeGoTimer / 5.0f) +1;
         draw_skipped_bitmap_region((BITMAP*)goFrame,0,0,128,96,0,0,skip,skip,0);
+    }
+
+    // Draw controls
+    if(ctrScreen)
+    {
+        draw_controls();
     }
 }
 

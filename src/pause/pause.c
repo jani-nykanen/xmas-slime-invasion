@@ -22,12 +22,20 @@ static bool cursorPos;
 /// Stick "released"
 static bool stickReleased;
 
+/// Choose sample
+static SAMPLE* smpChoose;
+/// Select sample
+static SAMPLE* smpSelect;
+
 /// Initialize pause scene
 /// > Always 0
 static int pause_init()
 {
     bmpFont = get_bitmap("font");
     bmpCursor = get_bitmap("cursor");
+
+    smpChoose = get_sample("choose");
+    smpSelect = get_sample("select");
 
     cursorPos = false;
     stickReleased = true;
@@ -39,8 +47,16 @@ static int pause_init()
 /// < tm Time multiplier
 static void pause_update(float tm)
 {
+    if(vpad_get_button(5) == PRESSED)
+    {
+        play_sample(smpChoose,0.70f);
+        app_swap_scene("title");
+    }
+
     if(vpad_get_button(4) == PRESSED || vpad_get_button(1) == PRESSED)
     {
+        play_sample(smpChoose,0.70f);
+
         if(!cursorPos)
             app_swap_scene("game");
         else
@@ -51,7 +67,10 @@ static void pause_update(float tm)
 
     float stick = vpad_get_stick().y * (cursorPos ? -1 : 1);
     if(stick > 0.25f )
+    {
         cursorPos = !cursorPos;
+        play_sample(smpSelect,0.70f);
+    }
 }
 
 /// Draw pause scene

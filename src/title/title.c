@@ -30,6 +30,13 @@ static BITMAP* bmpCursor;
 /// House bitmap
 static BITMAP* bmpHouse;
 
+/// Choose sample
+static SAMPLE* smpChoose;
+/// Select sample
+static SAMPLE* smpSelect;
+/// Start sample
+static SAMPLE* smpStart;
+
 /// Is the frame drawn
 static bool frameDrawn;
 /// Float timer
@@ -53,7 +60,6 @@ static void title_on_swap()
     floatTimer = 0.0f;
     titleTimer = 0.0f;
     cursorPos = 0;
-    
     
     if(!musicStarted)
     {
@@ -80,6 +86,10 @@ static int title_init()
     bmpCursor = get_bitmap("cursor");
     bmpHouse = get_bitmap("house");
 
+    smpChoose = get_sample("choose");
+    smpSelect = get_sample("select");
+    smpStart = get_sample("start");
+
     musicStarted = false;
 
     return 0;
@@ -89,6 +99,11 @@ static int title_init()
 /// < tm Time mul.
 static void title_update(float tm)
 {
+    if(vpad_get_button(5) == PRESSED)
+    {
+        app_terminate();
+    }
+
     if(titlePhase == 1 || titlePhase == 2)
     {
         floatTimer += 0.033f * tm;
@@ -111,7 +126,7 @@ static void title_update(float tm)
         if(any_pressed())
         {
             titlePhase ++;
-            
+            play_sample(smpStart,0.70f);
         }
         break;
 
@@ -124,12 +139,17 @@ static void title_update(float tm)
             case 0:
                 titlePhase ++;
                 floatTimer = 0.0f;
+                play_sample(smpChoose,0.70f);
                 break;
 
             case 1:
                 audio = !audio;
                 enable_samples(audio);
                 enable_music(audio);
+
+                if(audio)
+                    play_sample(smpChoose,0.70f);
+
                 break;
 
             case 2:
@@ -141,10 +161,16 @@ static void title_update(float tm)
             
         }
 
+        int oPos = cursorPos;
         if(cursorPos < 2 && vpad_get_delta().y > 0.0f && vpad_get_stick().y > 0.0f)
             cursorPos ++;
         else if(cursorPos > 0 && vpad_get_delta().y < 0.0f && vpad_get_stick().y < 0.0f)
             cursorPos --;
+
+        if(oPos != cursorPos)
+        {
+            play_sample(smpSelect,0.70f);
+        }
     }
     break;
 

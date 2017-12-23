@@ -1,6 +1,6 @@
 
 
-**[Play on Itch.io](https://gamejolt.com/games/xmas-slime-invasion/306569)**
+**[Play on Itch.io](https://jani-nykanen.itch.io/xmas-slime-invasion)**
 
 -----
 
